@@ -1,9 +1,11 @@
-import HomePage from '../pages/home/home-page';
-import AboutPage from '../pages/about/about-page';
+import StoriesPage from "../pages/stories/stories-page.js";
+import AddStoryPage from "../pages/stories/add-story-page.js";
+import AboutPage from "../pages/about/about-page.js";
 
 const routes = {
-  '/': new HomePage(),
-  '/about': new AboutPage(),
+  "/": new StoriesPage(),
+  "/add": new AddStoryPage(),
+  "/about": new AboutPage(),
 };
 
 export default routes;
