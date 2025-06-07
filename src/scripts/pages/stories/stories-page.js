@@ -1,3 +1,4 @@
+// src/scripts/pages/stories/stories-page.js
 import { StoryModel } from "../../../models/story-model.js";
 import { StoriesView } from "../../../views/stories-view.js";
 import { StoriesPresenter } from "../../../presenters/stories-presenter.js";
@@ -7,7 +8,9 @@ export default class StoriesPage {
     this.presenter = null;
     this.view = null;
     this.model = null;
-    this.isDestroyed = false;
+    this.isInitialized = false;
+    this.isInitializing = false;
+    this.instanceId = Math.random().toString(36).substr(2, 9);
   }
 
   async render() {
@@ -24,6 +27,7 @@ export default class StoriesPage {
           
           <div class="stories-content">
             <div class="stories-list" id="stories-container" role="main">
+              <!-- Stories akan dimuat di sini -->
             </div>
             
             <div class="map-section">
@@ -37,24 +41,34 @@ export default class StoriesPage {
   }
 
   async afterRender() {
-    // Prevent double initialization
-    if (this.presenter) {
-      console.log("StoriesPage already initialized, skipping...");
+    // PERBAIKAN: Prevent double/multiple initialization
+    if (this.isInitialized || this.isInitializing) {
+      console.log(
+        `StoriesPage[${this.instanceId}] sudah diinisialisasi/sedang inisialisasi, skip...`
+      );
       return;
     }
 
+    this.isInitializing = true;
+
     try {
-      console.log("Initializing StoriesPage...");
+      console.log(`Menginisialisasi StoriesPage[${this.instanceId}]...`);
 
-      // Wait a bit to ensure DOM is fully ready
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Tunggu sebentar untuk memastikan DOM ready
+      await this.waitForDOM();
 
-      // Check if page is still active (not destroyed during wait)
-      if (this.isDestroyed) {
-        console.log(
-          "StoriesPage was destroyed during initialization, aborting..."
-        );
+      // Check if this instance is still valid (not destroyed during wait)
+      if (!this.isInitializing) {
+        console.log(`StoriesPage[${this.instanceId}] dibatalkan selama wait`);
         return;
+      }
+
+      // Check if containers exist
+      const storiesContainer = document.getElementById("stories-container");
+      const mapContainer = document.getElementById("map-container");
+
+      if (!storiesContainer || !mapContainer) {
+        throw new Error("Required containers not found in DOM");
       }
 
       // Initialize components
@@ -65,47 +79,87 @@ export default class StoriesPage {
       // Setup event handlers
       this.presenter.setupRetryHandler();
 
-      // Load stories with error handling
-      try {
-        await this.presenter.loadStories();
-      } catch (error) {
-        console.error("Error loading stories in afterRender:", error);
-        // The presenter should handle the error display
-      }
+      // Mark as initialized
+      this.isInitialized = true;
+      this.isInitializing = false;
 
-      console.log("StoriesPage initialized successfully");
+      // Load stories dengan error handling
+      console.log(`Memuat stories[${this.instanceId}]...`);
+      await this.presenter.loadStories();
+
+      console.log(`StoriesPage[${this.instanceId}] berhasil diinisialisasi`);
     } catch (error) {
-      console.error("Error in StoriesPage afterRender:", error);
-
-      // Show error in container if possible
-      const container = document.getElementById("stories-container");
-      if (container) {
-        container.innerHTML = `
-          <div class="error-container" role="alert">
-            <h3>Terjadi Kesalahan</h3>
-            <p>Tidak dapat memuat halaman stories. Silakan refresh halaman.</p>
-            <button onclick="window.location.reload()" class="retry-button">
-              Muat Ulang
-            </button>
-          </div>
-        `;
-      }
+      console.error(
+        `Error di StoriesPage[${this.instanceId}] afterRender:`,
+        error
+      );
+      this.isInitializing = false;
+      this.showInitError();
     }
   }
 
-  // Cleanup method
-  destroy() {
-    console.log("Destroying StoriesPage...");
-    this.isDestroyed = true;
+  // Method untuk menunggu DOM ready
+  async waitForDOM() {
+    return new Promise((resolve) => {
+      // Check every 50ms for up to 2 seconds
+      let attempts = 0;
+      const maxAttempts = 40;
 
-    // Cleanup view (which will cleanup the map)
-    if (this.view && typeof this.view.destroy === "function") {
-      this.view.destroy();
+      const checkDOM = () => {
+        attempts++;
+
+        const storiesContainer = document.getElementById("stories-container");
+        const mapContainer = document.getElementById("map-container");
+
+        if (storiesContainer && mapContainer) {
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          console.warn("DOM containers tidak ditemukan setelah timeout");
+          resolve();
+        } else {
+          setTimeout(checkDOM, 50);
+        }
+      };
+
+      checkDOM();
+    });
+  }
+
+  // Method untuk menampilkan error initialization
+  showInitError() {
+    const container = document.getElementById("stories-container");
+    if (container) {
+      container.innerHTML = `
+        <div class="error-container" role="alert">
+          <h3>Terjadi Kesalahan</h3>
+          <p>Tidak dapat memuat halaman stories. Silakan refresh halaman.</p>
+          <button onclick="window.location.reload()" class="retry-button btn btn-primary">
+            Muat Ulang Halaman
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  // PERBAIKAN: Cleanup method yang lebih robust
+  destroy() {
+    console.log(`Destroying StoriesPage[${this.instanceId}]...`);
+
+    // Stop any ongoing initialization
+    this.isInitializing = false;
+
+    try {
+      if (this.view && typeof this.view.destroy === "function") {
+        this.view.destroy();
+      }
+    } catch (error) {
+      console.warn("Error destroying view:", error);
     }
 
     // Clear references
     this.presenter = null;
     this.view = null;
     this.model = null;
+    this.isInitialized = false;
   }
 }

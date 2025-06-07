@@ -1,3 +1,4 @@
+// src/scripts/pages/app.js
 import routes from "../routes/routes.js";
 import { getActiveRoute } from "../routes/url-parser.js";
 import authService from "../../services/auth-service.js";
@@ -6,6 +7,9 @@ class App {
   #content = null;
   #drawerButton = null;
   #navigationDrawer = null;
+  #currentPage = null;
+  #isRendering = false;
+  #lastRenderedUrl = null;
 
   constructor({ navigationDrawer, drawerButton, content }) {
     this.#content = content;
@@ -15,19 +19,29 @@ class App {
     this.#setupDrawer();
     this.#setupViewTransitions();
     this.#setupAuthListener();
-    this.#updateNavigation();
+
+    // Update navigation setelah auth ready
+    setTimeout(() => {
+      this.#updateNavigation();
+    }, 100);
   }
 
   #setupAuthListener() {
-    // Listen for auth state changes
     authService.subscribe((isLoggedIn) => {
+      console.log("Auth state changed:", isLoggedIn);
       this.#updateNavigation();
     });
   }
 
   #updateNavigation() {
     const navList = document.getElementById("nav-list");
+    if (!navList) {
+      console.warn("Nav list not found");
+      return;
+    }
+
     const isLoggedIn = authService.isLoggedIn();
+    console.log("Updating navigation, logged in:", isLoggedIn);
 
     if (isLoggedIn) {
       const currentUser = authService.getCurrentUser();
@@ -38,7 +52,7 @@ class App {
         <li class="user-info">
           <span class="user-name">👤 ${currentUser?.name || "User"}</span>
         </li>
-        <li><button id="logout-button" class="logout-button">Keluar</button></li>
+        <li><button id="logout-button" class="logout-button btn btn-secondary">Keluar</button></li>
       `;
 
       // Add logout event listener
@@ -105,14 +119,25 @@ class App {
       return;
     }
 
+    // PERBAIKAN: Debounce hashchange events
+    let hashChangeTimeout = null;
+
     window.addEventListener("hashchange", async () => {
-      if (document.startViewTransition) {
-        await document.startViewTransition(async () => {
-          await this.renderPage();
-        }).finished;
-      } else {
-        await this.renderPage();
+      // Clear previous timeout
+      if (hashChangeTimeout) {
+        clearTimeout(hashChangeTimeout);
       }
+
+      // Debounce untuk menghindari multiple rapid changes
+      hashChangeTimeout = setTimeout(async () => {
+        if (document.startViewTransition) {
+          await document.startViewTransition(async () => {
+            await this.renderPage();
+          }).finished;
+        } else {
+          await this.renderPage();
+        }
+      }, 50);
     });
   }
 
@@ -122,17 +147,49 @@ class App {
   }
 
   async renderPage() {
+    const url = getActiveRoute();
+
+    // PERBAIKAN: Prevent multiple simultaneous renders dan duplicate renders
+    if (this.#isRendering) {
+      console.log("Rendering already in progress, skipping...");
+      return;
+    }
+
+    if (this.#lastRenderedUrl === url) {
+      console.log(`URL ${url} already rendered, skipping...`);
+      return;
+    }
+
+    this.#isRendering = true;
+
     try {
-      const url = getActiveRoute();
+      console.log("Rendering page:", url);
+
+      // Cleanup previous page
+      if (
+        this.#currentPage &&
+        typeof this.#currentPage.destroy === "function"
+      ) {
+        try {
+          this.#currentPage.destroy();
+        } catch (error) {
+          console.warn("Error destroying previous page:", error);
+        }
+      }
+      this.#currentPage = null;
 
       // Check if route requires authentication
       if (this.#isProtectedRoute(url) && !authService.isLoggedIn()) {
+        console.log("Protected route, redirecting to login");
+        this.#isRendering = false;
         window.location.hash = "#/login";
         return;
       }
 
       // If user is logged in and trying to access login page, redirect to home
       if (url === "/login" && authService.isLoggedIn()) {
+        console.log("User already logged in, redirecting to home");
+        this.#isRendering = false;
         window.location.hash = "#/";
         return;
       }
@@ -140,36 +197,75 @@ class App {
       const page = routes[url];
 
       if (!page) {
-        this.#content.innerHTML = `
-          <div class="error-container">
-            <h1>404 - Halaman Tidak Ditemukan</h1>
-            <p>Halaman yang Anda cari tidak tersedia.</p>
-            <a href="#/" class="retry-button">Kembali ke Beranda</a>
-          </div>
-        `;
+        this.#showNotFound();
+        this.#isRendering = false;
+        this.#lastRenderedUrl = url;
         return;
       }
 
-      this.#content.innerHTML = await page.render();
+      // Set loading state
+      this.#content.innerHTML = `
+        <div class="loading-container" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
+          <div class="loading-spinner"></div>
+          <p style="margin-left: 15px;">Memuat halaman...</p>
+        </div>
+      `;
 
+      // Small delay to ensure DOM is ready
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Render page
+      const htmlContent = await page.render();
+      this.#content.innerHTML = htmlContent;
+
+      // Store current page reference
+      this.#currentPage = page;
+
+      // afterRender dengan error handling
       if (page.afterRender) {
-        await page.afterRender();
+        try {
+          await page.afterRender();
+        } catch (error) {
+          console.error("Error in afterRender:", error);
+          this.#showPageError();
+          this.#isRendering = false;
+          return;
+        }
       }
 
       this.#content.focus();
       this.#updatePageTitle(url);
+      this.#lastRenderedUrl = url;
+
+      console.log("Page rendered successfully:", url);
     } catch (error) {
       console.error("Error rendering page:", error);
-      this.#content.innerHTML = `
-        <div class="error-container">
-          <h1>Terjadi Kesalahan</h1>
-          <p>Tidak dapat memuat halaman. Silakan coba lagi.</p>
-          <button onclick="window.location.reload()" class="retry-button">
-            Muat Ulang
-          </button>
-        </div>
-      `;
+      this.#showPageError();
+    } finally {
+      this.#isRendering = false;
     }
+  }
+
+  #showNotFound() {
+    this.#content.innerHTML = `
+      <div class="error-container">
+        <h1>404 - Halaman Tidak Ditemukan</h1>
+        <p>Halaman yang Anda cari tidak tersedia.</p>
+        <a href="#/" class="retry-button btn btn-primary">Kembali ke Beranda</a>
+      </div>
+    `;
+  }
+
+  #showPageError() {
+    this.#content.innerHTML = `
+      <div class="error-container">
+        <h1>Terjadi Kesalahan</h1>
+        <p>Tidak dapat memuat halaman. Silakan coba lagi.</p>
+        <button onclick="window.location.reload()" class="retry-button btn btn-primary">
+          Muat Ulang
+        </button>
+      </div>
+    `;
   }
 
   #updatePageTitle(url) {

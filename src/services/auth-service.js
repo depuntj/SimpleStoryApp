@@ -1,3 +1,4 @@
+// src/services/auth-service.js
 import { AuthModel } from "../models/auth-model.js";
 
 class AuthService {
@@ -5,11 +6,10 @@ class AuthService {
     this.authModel = new AuthModel();
     this.listeners = [];
 
-    // Load saved auth state from localStorage on initialization
+    // PERBAIKAN: Load auth state saat initialization
     this.loadAuthState();
   }
 
-  // Subscribe to auth state changes
   subscribe(callback) {
     this.listeners.push(callback);
     return () => {
@@ -19,7 +19,6 @@ class AuthService {
     };
   }
 
-  // Notify all listeners of auth state change
   notifyListeners() {
     this.listeners.forEach((callback) => callback(this.isLoggedIn()));
   }
@@ -39,7 +38,6 @@ class AuthService {
     this.authModel.logout();
     this.clearAuthState();
     this.notifyListeners();
-    // Redirect to login page
     window.location.hash = "#/login";
   }
 
@@ -55,7 +53,6 @@ class AuthService {
     return this.authModel.getCurrentUser();
   }
 
-  // Save auth state to localStorage
   saveAuthState() {
     if (this.authModel.currentUser && this.authModel.token) {
       localStorage.setItem(
@@ -66,7 +63,7 @@ class AuthService {
     }
   }
 
-  // Load auth state from localStorage
+  // PERBAIKAN: Buat loadAuthState synchronous dan lebih robust
   loadAuthState() {
     try {
       const savedUser = localStorage.getItem("dicoding_stories_user");
@@ -75,6 +72,7 @@ class AuthService {
       if (savedUser && savedToken) {
         this.authModel.currentUser = JSON.parse(savedUser);
         this.authModel.token = savedToken;
+        console.log("Auth state berhasil dimuat");
       }
     } catch (error) {
       console.error("Error loading auth state:", error);
@@ -82,13 +80,11 @@ class AuthService {
     }
   }
 
-  // Clear auth state from localStorage
   clearAuthState() {
     localStorage.removeItem("dicoding_stories_user");
     localStorage.removeItem("dicoding_stories_token");
   }
 
-  // Check if user needs to authenticate for protected routes
   requireAuth() {
     if (!this.isLoggedIn()) {
       window.location.hash = "#/login";
@@ -98,5 +94,4 @@ class AuthService {
   }
 }
 
-// Export singleton instance
 export default new AuthService();
