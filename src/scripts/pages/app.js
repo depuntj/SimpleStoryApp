@@ -1,5 +1,6 @@
 import routes from "../routes/routes.js";
 import { getActiveRoute } from "../routes/url-parser.js";
+import authService from "../../services/auth-service.js";
 
 class App {
   #content = null;
@@ -13,6 +14,48 @@ class App {
 
     this.#setupDrawer();
     this.#setupViewTransitions();
+    this.#setupAuthListener();
+    this.#updateNavigation();
+  }
+
+  #setupAuthListener() {
+    // Listen for auth state changes
+    authService.subscribe((isLoggedIn) => {
+      this.#updateNavigation();
+    });
+  }
+
+  #updateNavigation() {
+    const navList = document.getElementById("nav-list");
+    const isLoggedIn = authService.isLoggedIn();
+
+    if (isLoggedIn) {
+      const currentUser = authService.getCurrentUser();
+      navList.innerHTML = `
+        <li><a href="#/">Beranda</a></li>
+        <li><a href="#/add">Tambah Story</a></li>
+        <li><a href="#/about">Tentang</a></li>
+        <li class="user-info">
+          <span class="user-name">👤 ${currentUser?.name || "User"}</span>
+        </li>
+        <li><button id="logout-button" class="logout-button">Keluar</button></li>
+      `;
+
+      // Add logout event listener
+      const logoutButton = document.getElementById("logout-button");
+      if (logoutButton) {
+        logoutButton.addEventListener("click", () => {
+          if (confirm("Yakin ingin keluar?")) {
+            authService.logout();
+          }
+        });
+      }
+    } else {
+      navList.innerHTML = `
+        <li><a href="#/login">Masuk</a></li>
+        <li><a href="#/about">Tentang</a></li>
+      `;
+    }
   }
 
   #setupDrawer() {
@@ -73,9 +116,27 @@ class App {
     });
   }
 
+  #isProtectedRoute(url) {
+    const protectedRoutes = ["/add"];
+    return protectedRoutes.includes(url);
+  }
+
   async renderPage() {
     try {
       const url = getActiveRoute();
+
+      // Check if route requires authentication
+      if (this.#isProtectedRoute(url) && !authService.isLoggedIn()) {
+        window.location.hash = "#/login";
+        return;
+      }
+
+      // If user is logged in and trying to access login page, redirect to home
+      if (url === "/login" && authService.isLoggedIn()) {
+        window.location.hash = "#/";
+        return;
+      }
+
       const page = routes[url];
 
       if (!page) {
@@ -96,7 +157,6 @@ class App {
       }
 
       this.#content.focus();
-
       this.#updatePageTitle(url);
     } catch (error) {
       console.error("Error rendering page:", error);
@@ -117,6 +177,7 @@ class App {
       "/": "Dicoding Stories",
       "/add": "Tambah Story - Dicoding Stories",
       "/about": "Tentang - Dicoding Stories",
+      "/login": "Masuk - Dicoding Stories",
     };
 
     document.title = titles[url] || "Dicoding Stories";
