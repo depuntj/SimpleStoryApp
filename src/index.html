@@ -45,6 +45,11 @@
       crossorigin=""
     ></script>
 
+    <link rel="stylesheet" href="/styles/styles.css" />
+    <link rel="stylesheet" href="/styles/auth-page-style.css" />
+    <link rel="stylesheet" href="/styles/add-story-style.css" />
+    <link rel="stylesheet" href="/styles/about-page-style.css" />
+
     <script type="module" src="/scripts/index.js"></script>
   </head>
   <body>
@@ -124,23 +129,6 @@
 
     <script>
       if ("startViewTransition" in document) {
-        const originalPushState = history.pushState;
-        const originalReplaceState = history.replaceState;
-
-        history.pushState = function (...args) {
-          document.startViewTransition(() => {
-            originalPushState.apply(history, args);
-            window.dispatchEvent(new PopStateEvent("popstate"));
-          });
-        };
-
-        history.replaceState = function (...args) {
-          document.startViewTransition(() => {
-            originalReplaceState.apply(history, args);
-            window.dispatchEvent(new PopStateEvent("popstate"));
-          });
-        };
-
         window.addEventListener("hashchange", (event) => {
           if (!event.detail?.skipTransition) {
             document.startViewTransition(() => {
@@ -150,7 +138,6 @@
         });
       }
 
-      // Progressive Web App features
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
@@ -164,7 +151,6 @@
         });
       }
 
-      // Toast notification system
       window.showToast = function (message, type = "info", duration = 3000) {
         const container = document.getElementById("toast-container");
         const toast = document.createElement("div");
@@ -187,7 +173,6 @@
 
         container.appendChild(toast);
 
-        // Auto remove
         setTimeout(() => {
           toast.classList.add("toast-fade-out");
           setTimeout(() => {
@@ -197,7 +182,6 @@
           }, 300);
         }, duration);
 
-        // Manual close
         toast.querySelector(".toast-close").addEventListener("click", () => {
           toast.classList.add("toast-fade-out");
           setTimeout(() => {
