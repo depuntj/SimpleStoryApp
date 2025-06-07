@@ -5,6 +5,9 @@ import { StoriesPresenter } from "../../../presenters/stories-presenter.js";
 export default class StoriesPage {
   constructor() {
     this.presenter = null;
+    this.view = null;
+    this.model = null;
+    this.isDestroyed = false;
   }
 
   async render() {
@@ -34,11 +37,75 @@ export default class StoriesPage {
   }
 
   async afterRender() {
-    const model = new StoryModel();
-    const view = new StoriesView();
-    this.presenter = new StoriesPresenter(model, view);
+    // Prevent double initialization
+    if (this.presenter) {
+      console.log("StoriesPage already initialized, skipping...");
+      return;
+    }
 
-    this.presenter.setupRetryHandler();
-    await this.presenter.loadStories();
+    try {
+      console.log("Initializing StoriesPage...");
+
+      // Wait a bit to ensure DOM is fully ready
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Check if page is still active (not destroyed during wait)
+      if (this.isDestroyed) {
+        console.log(
+          "StoriesPage was destroyed during initialization, aborting..."
+        );
+        return;
+      }
+
+      // Initialize components
+      this.model = new StoryModel();
+      this.view = new StoriesView();
+      this.presenter = new StoriesPresenter(this.model, this.view);
+
+      // Setup event handlers
+      this.presenter.setupRetryHandler();
+
+      // Load stories with error handling
+      try {
+        await this.presenter.loadStories();
+      } catch (error) {
+        console.error("Error loading stories in afterRender:", error);
+        // The presenter should handle the error display
+      }
+
+      console.log("StoriesPage initialized successfully");
+    } catch (error) {
+      console.error("Error in StoriesPage afterRender:", error);
+
+      // Show error in container if possible
+      const container = document.getElementById("stories-container");
+      if (container) {
+        container.innerHTML = `
+          <div class="error-container" role="alert">
+            <h3>Terjadi Kesalahan</h3>
+            <p>Tidak dapat memuat halaman stories. Silakan refresh halaman.</p>
+            <button onclick="window.location.reload()" class="retry-button">
+              Muat Ulang
+            </button>
+          </div>
+        `;
+      }
+    }
+  }
+
+  // Cleanup method
+  destroy() {
+    console.log("Destroying StoriesPage...");
+    this.isDestroyed = true;
+
+    // Cleanup view (which will cleanup the map)
+    if (this.view && typeof this.view.destroy === "function") {
+      this.view.destroy();
+    }
+
+    // Clear references
+    this.presenter = null;
+    this.view = null;
+    this.model = null;
   }
 }
