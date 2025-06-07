@@ -1,5 +1,5 @@
-import { showFormattedDate } from "../utils/index.js";
-import CONFIG from "../config.js";
+import { showFormattedDate } from "../scripts/utils/index.js";
+import CONFIG from "../scripts/config.js";
 
 export class StoriesView {
   constructor() {

@@ -1,4 +1,4 @@
-import CONFIG from "../config.js";
+import CONFIG from "../scripts/config";
 
 export class StoryModel {
   async getAllStories() {

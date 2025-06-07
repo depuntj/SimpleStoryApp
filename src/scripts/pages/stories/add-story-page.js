@@ -1,7 +1,6 @@
-import { StoryModel } from "../../models/story-model.js";
-import { AddStoryView } from "../../views/add-story-view.js";
-import { AddStoryPresenter } from "../../presenters/add-story-presenter.js";
-
+import { StoryModel } from "../../../models/story-model.js";
+import { AddStoryView } from "../../../views/add-story-view.js";
+import { AddStoryPresenter } from "../../../presenters/add-story-presenter.js";
 export default class AddStoryPage {
   constructor() {
     this.view = null;

@@ -1,6 +1,6 @@
-import { StoryModel } from "../../models/story-model.js";
-import { StoriesView } from "../../views/stories-view.js";
-import { StoriesPresenter } from "../../presenters/stories-presenter.js";
+import { StoryModel } from "../../../models/story-model.js";
+import { StoriesView } from "../../../views/stories-view.js";
+import { StoriesPresenter } from "../../../presenters/stories-presenter.js";
 
 export default class StoriesPage {
   constructor() {
