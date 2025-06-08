@@ -48,8 +48,7 @@ export default class AboutPage {
 
         <div class="container">
           <div class="about-content">
-            
-            <!-- What is Dicoding Stories -->
+          
             <section class="content-section" data-aos="fade-up">
               <div class="section-icon">
                 <i class="fas fa-lightbulb"></i>
@@ -68,7 +67,6 @@ export default class AboutPage {
               </div>
             </section>
 
-            <!-- Features -->
             <section class="content-section features-section" data-aos="fade-up" data-aos-delay="100">
               <div class="section-header">
                 <h2>
@@ -134,8 +132,6 @@ export default class AboutPage {
                 </div>
               </div>
             </section>
-
-            <!-- Technology Stack -->
             <section class="content-section tech-section" data-aos="fade-up" data-aos-delay="200">
               <div class="section-header">
                 <h2>
@@ -259,7 +255,6 @@ export default class AboutPage {
               </div>
             </section>
 
-            <!-- Accessibility Features -->
             <section class="content-section accessibility-section" data-aos="fade-up" data-aos-delay="300">
               <div class="section-header">
                 <h2>
@@ -308,7 +303,6 @@ export default class AboutPage {
               </div>
             </section>
 
-            <!-- Call to Action -->
             <section class="cta-section" data-aos="zoom-in" data-aos-delay="400">
               <div class="cta-content">
                 <h2>
@@ -349,7 +343,6 @@ export default class AboutPage {
   }
 
   initializeAnimations() {
-    // Simple scroll-based animations without external library
     const observerOptions = {
       threshold: 0.1,
       rootMargin: "0px 0px -50px 0px",
@@ -363,12 +356,10 @@ export default class AboutPage {
       });
     }, observerOptions);
 
-    // Observe all animatable elements
     document.querySelectorAll("[data-aos]").forEach((el) => {
       observer.observe(el);
     });
 
-    // Animate hero stats on load
     setTimeout(() => {
       this.animateHeroStats();
     }, 500);
@@ -397,7 +388,6 @@ export default class AboutPage {
   }
 
   setupInteractiveElements() {
-    // Feature cards hover effects
     document.querySelectorAll(".feature-card").forEach((card) => {
       card.addEventListener("mouseenter", () => {
         card.style.transform = "translateY(-8px)";
@@ -408,7 +398,6 @@ export default class AboutPage {
       });
     });
 
-    // Tech items click effects
     document.querySelectorAll(".tech-item").forEach((item) => {
       item.addEventListener("click", () => {
         item.style.transform = "scale(1.05)";
@@ -418,7 +407,6 @@ export default class AboutPage {
       });
     });
 
-    // Smooth scroll for CTA buttons
     document.querySelectorAll('a[href^="#"]').forEach((link) => {
       link.addEventListener("click", (e) => {
         const target = document.querySelector(link.getAttribute("href"));

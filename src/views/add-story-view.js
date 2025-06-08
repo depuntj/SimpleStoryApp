@@ -15,7 +15,6 @@ export class AddStoryView {
     return `
       <div class="add-story-page">
         <div class="add-story-container">
-          <!-- Header Section -->
           <div class="story-header">
             <div class="story-header-content">
               <h1>
@@ -26,7 +25,6 @@ export class AddStoryView {
             </div>
           </div>
 
-          <!-- Progress Section -->
           <div class="progress-section">
             <div class="progress-steps">
               <div class="progress-step ${
@@ -64,10 +62,8 @@ export class AddStoryView {
             </div>
           </div>
 
-          <!-- Form Section -->
           <form id="add-story-form" class="story-form">
-            
-            <!-- Step 1: Description -->
+      
             <div class="form-step ${
               this.currentStep === 1 ? "active" : ""
             }" data-step="1">
@@ -141,7 +137,6 @@ export class AddStoryView {
               </div>
             </div>
 
-            <!-- Step 2: Camera -->
             <div class="form-step ${
               this.currentStep === 2 ? "active" : ""
             }" data-step="2">
@@ -223,7 +218,6 @@ export class AddStoryView {
               </div>
             </div>
 
-            <!-- Step 3: Location -->
             <div class="form-step ${
               this.currentStep === 3 ? "active" : ""
             }" data-step="3">
@@ -294,8 +288,6 @@ export class AddStoryView {
                 </div>
               </div>
             </div>
-
-            <!-- Navigation -->
             <div class="form-navigation">
               <div class="nav-buttons">
                 <button type="button" id="prev-btn" class="nav-button btn-secondary" style="display: none;">
@@ -422,25 +414,22 @@ export class AddStoryView {
       case 2:
         return !!this.capturedPhoto;
       case 3:
-        return true; // Location is optional
+        return true;
       default:
         return false;
     }
   }
 
   async updateStepDisplay() {
-    // Update step visibility
     document.querySelectorAll(".form-step").forEach((step, index) => {
       step.classList.toggle("active", index === this.currentStep - 1);
     });
 
-    // Update progress steps
     document.querySelectorAll(".progress-step").forEach((step, index) => {
       step.classList.toggle("active", index === this.currentStep - 1);
       step.classList.toggle("completed", index < this.currentStep - 1);
     });
 
-    // Update progress bar
     const progressFill = document.querySelector(".progress-fill");
     if (progressFill) {
       progressFill.style.width = `${
@@ -448,7 +437,6 @@ export class AddStoryView {
       }%`;
     }
 
-    // Update navigation buttons
     this.updateNavigationState();
   }
 
@@ -457,12 +445,10 @@ export class AddStoryView {
     const prevBtn = document.getElementById("prev-btn");
     const submitBtn = document.getElementById("submit-btn");
 
-    // Previous button
     if (prevBtn) {
       prevBtn.style.display = this.currentStep > 1 ? "flex" : "none";
     }
 
-    // Next/Submit button
     if (this.currentStep === this.totalSteps) {
       if (nextBtn) nextBtn.style.display = "none";
       if (submitBtn) submitBtn.style.display = "flex";

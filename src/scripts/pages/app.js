@@ -1,4 +1,3 @@
-// src/scripts/pages/app.js
 import routes from "../routes/routes.js";
 import { getActiveRoute } from "../routes/url-parser.js";
 import authService from "../../services/auth-service.js";
@@ -20,7 +19,6 @@ class App {
     this.#setupViewTransitions();
     this.#setupAuthListener();
 
-    // Update navigation setelah auth ready
     setTimeout(() => {
       this.#updateNavigation();
     }, 100);
@@ -55,7 +53,6 @@ class App {
         <li><button id="logout-button" class="logout-button btn btn-secondary">Keluar</button></li>
       `;
 
-      // Add logout event listener
       const logoutButton = document.getElementById("logout-button");
       if (logoutButton) {
         logoutButton.addEventListener("click", () => {
@@ -119,16 +116,13 @@ class App {
       return;
     }
 
-    // PERBAIKAN: Debounce hashchange events
     let hashChangeTimeout = null;
 
     window.addEventListener("hashchange", async () => {
-      // Clear previous timeout
       if (hashChangeTimeout) {
         clearTimeout(hashChangeTimeout);
       }
 
-      // Debounce untuk menghindari multiple rapid changes
       hashChangeTimeout = setTimeout(async () => {
         if (document.startViewTransition) {
           await document.startViewTransition(async () => {
@@ -149,7 +143,6 @@ class App {
   async renderPage() {
     const url = getActiveRoute();
 
-    // PERBAIKAN: Prevent multiple simultaneous renders dan duplicate renders
     if (this.#isRendering) {
       console.log("Rendering already in progress, skipping...");
       return;
@@ -165,7 +158,6 @@ class App {
     try {
       console.log("Rendering page:", url);
 
-      // Cleanup previous page
       if (
         this.#currentPage &&
         typeof this.#currentPage.destroy === "function"
@@ -178,7 +170,6 @@ class App {
       }
       this.#currentPage = null;
 
-      // Check if route requires authentication
       if (this.#isProtectedRoute(url) && !authService.isLoggedIn()) {
         console.log("Protected route, redirecting to login");
         this.#isRendering = false;
@@ -186,7 +177,6 @@ class App {
         return;
       }
 
-      // If user is logged in and trying to access login page, redirect to home
       if (url === "/login" && authService.isLoggedIn()) {
         console.log("User already logged in, redirecting to home");
         this.#isRendering = false;
@@ -203,7 +193,6 @@ class App {
         return;
       }
 
-      // Set loading state
       this.#content.innerHTML = `
         <div class="loading-container" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
           <div class="loading-spinner"></div>
@@ -211,17 +200,11 @@ class App {
         </div>
       `;
 
-      // Small delay to ensure DOM is ready
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Render page
       const htmlContent = await page.render();
       this.#content.innerHTML = htmlContent;
-
-      // Store current page reference
       this.#currentPage = page;
-
-      // afterRender dengan error handling
       if (page.afterRender) {
         try {
           await page.afterRender();

@@ -1,28 +1,16 @@
-/* Modern Add Story Page Styles */
 .add-story-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
-  position: relative;
-  padding: 0;
-}
-
-.add-story-page::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
-  z-index: -1;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.05) 0%,
+    rgba(236, 72, 153, 0.05) 100%
+  );
+  padding: 32px 20px;
 }
 
 .add-story-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 32px 20px;
 }
 
 .story-header {
@@ -33,25 +21,6 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow);
   border: 1px solid var(--border-light);
-  position: relative;
-  overflow: hidden;
-}
-
-.story-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100px;
-  background: var(--gradient-primary);
-  opacity: 0.05;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.story-header-content {
-  position: relative;
-  z-index: 2;
 }
 
 .story-header h1 {
@@ -66,27 +35,20 @@
 }
 
 .story-header h1 i {
-  font-size: 2.5rem;
   color: var(--primary);
 }
 
 .story-header p {
   font-size: 1.2rem;
   color: var(--text-secondary);
-  margin-bottom: 0;
   line-height: 1.6;
-}
-
-.progress-section {
-  margin-bottom: 40px;
 }
 
 .progress-steps {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   flex-wrap: wrap;
 }
 
@@ -95,25 +57,21 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 20px;
-  border-radius: var(--radius-lg);
-  transition: var(--transition);
-  position: relative;
   min-width: 140px;
 }
 
 .progress-step-icon {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  transition: var(--transition);
   border: 2px solid var(--border);
   background: var(--bg-secondary);
   color: var(--text-muted);
+  transition: var(--transition);
 }
 
 .progress-step.active .progress-step-icon {
@@ -121,7 +79,6 @@
   color: var(--text-white);
   border-color: var(--primary);
   transform: scale(1.1);
-  box-shadow: var(--shadow-md);
 }
 
 .progress-step.completed .progress-step-icon {
@@ -134,8 +91,6 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-muted);
-  text-align: center;
-  transition: var(--transition);
 }
 
 .progress-step.active .progress-step-label {
@@ -151,7 +106,6 @@
   height: 3px;
   background: var(--border);
   border-radius: var(--radius-full);
-  overflow: hidden;
   margin-bottom: 32px;
 }
 
@@ -159,16 +113,14 @@
   height: 100%;
   background: var(--gradient-primary);
   border-radius: var(--radius-full);
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.4s ease;
 }
 
 .story-form {
   background: var(--bg-primary);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
   border: 1px solid var(--border-light);
-  position: relative;
 }
 
 .form-step {
@@ -179,18 +131,6 @@
 
 .form-step.active {
   display: block;
-  animation: slideInStep 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideInStep {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .step-content {
@@ -224,17 +164,11 @@
   line-height: 1.6;
 }
 
-/* Step 1: Description */
-.description-section {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-bottom: 24px;
 }
 
 .form-label {
@@ -254,11 +188,6 @@
 .label-optional {
   color: var(--text-muted);
   font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.textarea-container {
-  position: relative;
 }
 
 .form-textarea {
@@ -297,7 +226,6 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 8px;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -320,6 +248,7 @@
   border: 1px solid rgba(99, 102, 241, 0.1);
   border-radius: var(--radius-lg);
   padding: 24px;
+  margin-top: 24px;
 }
 
 .tips-card h3 {
@@ -354,7 +283,6 @@
   flex-shrink: 0;
 }
 
-/* Step 2: Camera */
 .camera-section {
   display: flex;
   flex-direction: column;
@@ -373,13 +301,14 @@
   height: 400px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-xl);
-  overflow: hidden;
   border: 2px solid var(--border);
   box-shadow: var(--shadow-md);
+  overflow: hidden;
 }
 
 .camera-preview,
-.photo-canvas {
+.photo-canvas,
+.photo-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -390,13 +319,6 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.photo-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: var(--radius-xl);
 }
 
 .photo-overlay {
@@ -416,7 +338,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary) 100%
+  );
   color: var(--text-secondary);
   text-align: center;
   padding: 40px 24px;
@@ -445,7 +371,6 @@
 .camera-controls {
   display: flex;
   justify-content: center;
-  align-items: center;
   gap: 16px;
   margin-top: 24px;
   flex-wrap: wrap;
@@ -462,23 +387,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.camera-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.camera-button:hover::before {
-  left: 100%;
 }
 
 .btn-camera-primary {
@@ -489,28 +397,18 @@
 
 .btn-camera-primary:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg), 0 8px 25px rgba(99, 102, 241, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-camera-capture {
   background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
   color: var(--text-white);
   box-shadow: var(--shadow);
-  position: relative;
 }
 
 .btn-camera-capture:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg), 0 8px 25px rgba(16, 185, 129, 0.3);
-}
-
-.btn-camera-capture.pulse {
-  animation: captureGlow 2s infinite;
-}
-
-@keyframes captureGlow {
-  0%, 100% { box-shadow: var(--shadow), 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  50% { box-shadow: var(--shadow), 0 0 0 10px rgba(16, 185, 129, 0); }
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-camera-secondary {
@@ -521,7 +419,7 @@
 
 .btn-camera-secondary:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg), 0 8px 25px rgba(245, 158, 11, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .camera-button:disabled {
@@ -564,12 +462,10 @@
 
 .tip-item i {
   color: var(--accent);
-  font-size: 1rem;
   width: 20px;
   text-align: center;
 }
 
-/* Step 3: Location */
 .location-section {
   display: flex;
   flex-direction: column;
@@ -584,9 +480,8 @@
 .location-map {
   height: 400px;
   border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
   border: 2px solid var(--border);
+  box-shadow: var(--shadow-md);
 }
 
 .map-overlay {
@@ -621,13 +516,11 @@
   background: var(--primary);
   color: var(--text-white);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
 }
 
 .map-control-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
 
 .btn-danger {
@@ -678,10 +571,6 @@
   color: var(--success);
 }
 
-.location-text {
-  flex: 1;
-}
-
 .location-text h4 {
   font-size: 1rem;
   font-weight: 600;
@@ -694,11 +583,6 @@
   color: var(--text-secondary);
   margin: 0;
   font-family: "Courier New", monospace;
-}
-
-.location-actions {
-  display: flex;
-  justify-content: flex-end;
 }
 
 .location-notes {
@@ -741,7 +625,6 @@
   flex-shrink: 0;
 }
 
-/* Navigation */
 .form-navigation {
   background: var(--bg-tertiary);
   padding: 32px 48px;
@@ -770,25 +653,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  position: relative;
-  overflow: hidden;
   min-width: 140px;
   justify-content: center;
-}
-
-.nav-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.nav-button:hover::before {
-  left: 100%;
 }
 
 .nav-button.btn-primary {
@@ -799,7 +665,7 @@
 
 .nav-button.btn-primary:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg), 0 8px 25px rgba(99, 102, 241, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .nav-button.btn-secondary {
@@ -822,17 +688,13 @@
 
 .nav-button.btn-submit:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-lg), 0 8px 25px rgba(16, 185, 129, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .nav-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-}
-
-.nav-button:disabled::before {
-  display: none;
 }
 
 .btn-text,
@@ -869,9 +731,8 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
-  .add-story-container {
+  .add-story-page {
     padding: 24px 16px;
   }
 
@@ -892,7 +753,6 @@
 
   .progress-step {
     min-width: 120px;
-    padding: 16px 12px;
   }
 
   .progress-step-icon {
@@ -911,10 +771,7 @@
     gap: 8px;
   }
 
-  .camera-viewport {
-    height: 300px;
-  }
-
+  .camera-viewport,
   .location-map {
     height: 300px;
   }
@@ -957,12 +814,21 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
-    text-align: left;
+  }
+
+  .textarea-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .char-counter {
+    align-self: flex-end;
   }
 }
 
 @media (max-width: 480px) {
-  .add-story-container {
+  .add-story-page {
     padding: 20px 12px;
   }
 
@@ -994,10 +860,7 @@
     font-size: 1.5rem;
   }
 
-  .camera-viewport {
-    height: 250px;
-  }
-
+  .camera-viewport,
   .location-map {
     height: 250px;
   }
@@ -1012,79 +875,7 @@
     justify-content: center;
   }
 
-  .tips-grid {
-    gap: 8px;
-  }
-
-  .tip-item {
-    font-size: 0.85rem;
-  }
-
   .form-navigation {
     padding: 20px 16px;
   }
-
-  .textarea-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .char-counter {
-    align-self: flex-end;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .progress-step,
-  .camera-button,
-  .nav-button,
-  .form-step {
-    transition: none;
-    animation: none;
-  }
-
-  .btn-camera-capture.pulse {
-    animation: none;
-  }
-
-  .form-step.active {
-    animation: none;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .camera-placeholder {
-    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  }
-
-  .map-control-btn {
-    background: rgba(31, 41, 55, 0.95);
-    color: var(--primary);
-  }
-
-  .map-control-btn:hover:not(:disabled) {
-    background: var(--primary);
-    color: var(--text-white);
-  }
-}
-
-/* Custom scrollbar for textarea */
-.form-textarea::-webkit-scrollbar {
-  width: 8px;
-}
-
-.form-textarea::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-sm);
-}
-
-.form-textarea::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: var(--radius-sm);
-}
-
-.form-textarea::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
 }

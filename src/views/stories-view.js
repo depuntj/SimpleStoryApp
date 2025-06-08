@@ -210,32 +210,91 @@ export class StoriesView {
   }
 
   renderStoriesList(stories) {
+    console.log("🎨 Rendering stories list:", stories.length);
+
     this.storiesData = stories;
     this.updateStats(stories);
 
     const container = document.getElementById("stories-container");
-    if (!container) return;
+    if (!container) {
+      console.error("❌ Stories container not found");
+      return;
+    }
+
+    if (!Array.isArray(stories)) {
+      console.error("❌ Stories data is not an array:", stories);
+      this.showError("Data stories tidak valid");
+      return;
+    }
 
     if (stories.length === 0) {
+      console.log("📭 No stories to display, showing empty state");
       this.showEmptyState();
       return;
     }
 
-    container.innerHTML = stories
-      .map((story, index) => this.createStoryCard(story, index))
-      .join("");
-    this.setupStoryInteractions();
-    this.addMarkersToMap(stories);
+    try {
+      console.log("🎨 Creating story cards HTML...");
+      const cardsHTML = stories
+        .map((story, index) => this.createStoryCard(story, index))
+        .join("");
 
-    this.announceToScreenReader(`${stories.length} stories berhasil dimuat`);
+      container.innerHTML = cardsHTML;
+
+      console.log("✅ Story cards rendered, setting up interactions...");
+      this.setupStoryInteractions();
+
+      console.log("🗺️ Adding markers to map...");
+      this.addMarkersToMap(stories);
+
+      this.announceToScreenReader(`${stories.length} stories berhasil dimuat`);
+
+      console.log(`🎉 Successfully rendered ${stories.length} stories`);
+    } catch (error) {
+      console.error("❌ Error rendering stories:", error);
+      this.showError("Gagal menampilkan stories");
+    }
+  }
+
+  formatFullDate(dateString) {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn("⚠️ Invalid date string:", dateString);
+        return dateString;
+      }
+      return date.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      console.warn("❌ Error formatting date:", error, dateString);
+      return dateString;
+    }
   }
 
   createStoryCard(story, index) {
+    console.log(`🎨 Creating card for story ${index + 1}:`, {
+      id: story.id,
+      name: story.name,
+      hasDescription: !!story.description,
+      hasLocation: !!(story.lat && story.lon),
+    });
+
     const hasLocation = story.lat && story.lon;
+    const storyName = story.name || "Anonymous User";
+    const storyDescription =
+      story.description || "Tidak ada deskripsi tersedia.";
+    const photoUrl = story.photoUrl || "";
+
     const truncatedDesc =
-      story.description.length > 120
-        ? story.description.substring(0, 120) + "..."
-        : story.description;
+      storyDescription.length > 120
+        ? storyDescription.substring(0, 120) + "..."
+        : storyDescription;
 
     return `
       <article class="story-card ${hasLocation ? "has-location" : ""}" 
@@ -246,10 +305,11 @@ export class StoriesView {
                aria-describedby="story-desc-${index}">
         
         <div class="story-image">
-          <img src="${story.photoUrl}" 
-               alt="Foto story dari ${
-                 story.name
-               }: ${story.description.substring(0, 50)}..." 
+          <img src="${photoUrl}" 
+               alt="Foto story dari ${storyName}: ${storyDescription.substring(
+      0,
+      50
+    )}..." 
                loading="lazy"
                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div class="image-placeholder" style="display: none;">
@@ -272,18 +332,22 @@ export class StoriesView {
             }
           </div>
         </div>
-
+  
         <div class="story-content">
           <div class="story-header">
             <div class="author-info">
-              <div class="author-avatar">
-                <i class="fas fa-user-circle"></i>
+              <div class="author-avatar" title="${storyName}">
+                <span class="avatar-text">${storyName
+                  .charAt(0)
+                  .toUpperCase()}</span>
               </div>
               <div class="author-details">
-                <h3 class="author-name" id="story-author-${index}">${
-      story.name
-    }</h3>
-                <time class="story-date" datetime="${story.createdAt}">
+                <h3 class="author-name" id="story-author-${index}" title="${storyName}">
+                  ${storyName}
+                </h3>
+                <time class="story-date" datetime="${
+                  story.createdAt
+                }" title="${this.formatFullDate(story.createdAt)}">
                   ${this.getRelativeTime(story.createdAt)}
                 </time>
               </div>
@@ -298,48 +362,69 @@ export class StoriesView {
               </button>
             </div>
           </div>
-
-          <p class="story-description" id="story-desc-${index}">${truncatedDesc}</p>
-
-          ${
-            hasLocation
-              ? `
-            <div class="story-location">
-              <i class="fas fa-map-pin"></i>
-              <span>Lokasi tersedia</span>
-            </div>
-          `
-              : ""
-          }
+  
+          <p class="story-description" id="story-desc-${index}" title="${storyDescription}">
+            ${truncatedDesc}
+          </p>
+  
+          <div class="story-footer">
+            ${
+              hasLocation
+                ? `
+              <div class="story-location">
+                <i class="fas fa-map-pin"></i>
+                <span>Lokasi tersedia</span>
+              </div>
+            `
+                : `
+              <div class="story-no-location">
+                <i class="fas fa-map-pin"></i>
+                <span>Tanpa lokasi</span>
+              </div>
+            `
+            }
+          </div>
         </div>
       </article>
     `;
   }
 
   setupStoryInteractions() {
-    document.querySelectorAll(".story-card").forEach((card) => {
+    console.log("🔗 Setting up story interactions...");
+
+    document.querySelectorAll(".story-card").forEach((card, cardIndex) => {
       const storyId = card.dataset.storyId;
 
-      card.addEventListener("click", (e) => {
+      if (!storyId) {
+        console.warn(`❌ Story card ${cardIndex} missing ID:`, card);
+        return;
+      }
+
+      console.log(`🔗 Setting up interactions for story: ${storyId}`);
+
+      const handleCardClick = (e) => {
         if (
           !e.target.closest(".story-overlay") &&
           !e.target.closest(".story-actions")
         ) {
+          console.log("👆 Card clicked, opening detail:", storyId);
           this.showStoryDetail(storyId);
         }
-      });
+      };
 
+      card.addEventListener("click", handleCardClick);
       card.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
+          console.log("⌨️ Card keyboard activated, opening detail:", storyId);
           this.showStoryDetail(storyId);
         }
       });
-
       const viewBtn = card.querySelector(".view-btn");
       if (viewBtn) {
         viewBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          console.log("👁️ View button clicked:", storyId);
           this.showStoryDetail(storyId);
         });
       }
@@ -348,6 +433,7 @@ export class StoriesView {
       if (locationBtn) {
         locationBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          console.log("📍 Location button clicked:", storyId);
           this.focusOnMap(storyId);
         });
       }
@@ -356,6 +442,7 @@ export class StoriesView {
       if (likeBtn) {
         likeBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          console.log("❤️ Like button clicked:", storyId);
           this.toggleLike(likeBtn);
         });
       }
@@ -364,15 +451,39 @@ export class StoriesView {
       if (shareBtn) {
         shareBtn.addEventListener("click", (e) => {
           e.stopPropagation();
+          console.log("📤 Share button clicked:", storyId);
           this.shareStory(storyId);
         });
       }
     });
+
+    console.log("✅ Story interactions setup complete");
   }
 
   showStoryDetail(storyId) {
+    console.log("🔍 Opening story detail for ID:", storyId);
+
     const story = this.storiesData.find((s) => s.id === storyId);
-    if (!story) return;
+    if (!story) {
+      console.error("❌ Story not found:", storyId);
+      if (window.showToast) {
+        window.showToast("Story tidak ditemukan", "error");
+      }
+      return;
+    }
+
+    const storyName = story.name || "Anonymous User";
+    const storyDescription =
+      story.description || "Tidak ada deskripsi tersedia.";
+    const photoUrl = story.photoUrl || "";
+    const hasLocation = story.lat && story.lon;
+
+    console.log("📖 Story detail data:", {
+      id: story.id,
+      name: storyName,
+      hasDescription: !!storyDescription,
+      hasLocation,
+    });
 
     const modal = document.createElement("div");
     modal.className = "story-modal";
@@ -385,39 +496,97 @@ export class StoriesView {
           
           <div class="modal-content">
             <div class="modal-image">
-              <img src="${story.photoUrl}" alt="Foto story dari ${story.name}">
+              <img src="${photoUrl}" 
+                   alt="Foto story dari ${storyName}"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+              <div class="image-placeholder" style="display: none;">
+                <i class="fas fa-image"></i>
+                <span>Gambar tidak tersedia</span>
+              </div>
             </div>
             
             <div class="modal-info">
               <div class="modal-header">
-                <div class="author-info">
-                  <div class="author-avatar">
-                    <i class="fas fa-user-circle"></i>
+                <div class="author-info-modal">
+                  <div class="author-avatar-modal" title="${storyName}">
+                    <span class="avatar-text">${storyName
+                      .charAt(0)
+                      .toUpperCase()}</span>
                   </div>
-                  <div>
-                    <h2 id="modal-title">${story.name}</h2>
-                    <time datetime="${story.createdAt}">
-                      ${showFormattedDate(story.createdAt)}
+                  <div class="author-details-modal">
+                    <h2 id="modal-title" class="author-name-modal">${storyName}</h2>
+                    <time datetime="${
+                      story.createdAt
+                    }" class="story-date-modal">
+                      ${this.formatFullDate(story.createdAt)}
                     </time>
                   </div>
                 </div>
               </div>
               
               <div class="modal-body">
-                <p class="story-text">${story.description}</p>
+                <div class="story-text-container">
+                  <h3 class="story-text-title">
+                    <i class="fas fa-quote-left"></i>
+                    Story
+                  </h3>
+                  <p class="story-text">${storyDescription}</p>
+                </div>
                 
                 ${
-                  story.lat && story.lon
+                  hasLocation
                     ? `
                   <div class="story-location-info">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span>Lokasi: ${parseFloat(story.lat).toFixed(
-                      4
-                    )}, ${parseFloat(story.lon).toFixed(4)}</span>
+                    <div class="location-details">
+                      <span class="location-label">Lokasi:</span>
+                      <span class="location-coords">${parseFloat(
+                        story.lat
+                      ).toFixed(4)}, ${parseFloat(story.lon).toFixed(4)}</span>
+                    </div>
                   </div>
                 `
-                    : ""
+                    : `
+                  <div class="story-no-location-info">
+                    <i class="fas fa-map-pin"></i>
+                    <span>Tanpa informasi lokasi</span>
+                  </div>
+                `
                 }
+                
+                <div class="story-meta">
+                  <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="meta-content">
+                      <span class="meta-label">Dibuat:</span>
+                      <span class="meta-value">${this.getRelativeTime(
+                        story.createdAt
+                      )}</span>
+                    </div>
+                  </div>
+                  <div class="meta-item">
+                    <i class="fas fa-user"></i>
+                    <div class="meta-content">
+                      <span class="meta-label">Oleh:</span>
+                      <span class="meta-value">${storyName}</span>
+                    </div>
+                  </div>
+                  ${
+                    hasLocation
+                      ? `
+                  <div class="meta-item">
+                    <i class="fas fa-globe"></i>
+                    <div class="meta-content">
+                      <span class="meta-label">Koordinat:</span>
+                      <span class="meta-value">${parseFloat(story.lat).toFixed(
+                        6
+                      )}, ${parseFloat(story.lon).toFixed(6)}</span>
+                    </div>
+                  </div>
+                  `
+                      : ""
+                  }
+                </div>
               </div>
             </div>
           </div>
@@ -432,8 +601,11 @@ export class StoriesView {
     const overlay = modal.querySelector(".modal-overlay");
 
     const closeModal = () => {
-      document.body.removeChild(modal);
-      document.body.style.overflow = "";
+      console.log("🚪 Closing story modal");
+      if (document.body.contains(modal)) {
+        document.body.removeChild(modal);
+        document.body.style.overflow = "";
+      }
     };
 
     closeBtn.addEventListener("click", closeModal);
@@ -448,7 +620,14 @@ export class StoriesView {
       }
     });
 
-    setTimeout(() => closeBtn.focus(), 100);
+    setTimeout(() => {
+      closeBtn.focus();
+      this.announceToScreenReader(
+        `Modal detail story dari ${storyName} dibuka`
+      );
+    }, 100);
+
+    console.log("✅ Story modal opened successfully");
   }
 
   toggleLike(btn) {
