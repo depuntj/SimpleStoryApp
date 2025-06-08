@@ -2,226 +2,229 @@ export class LoginView {
   constructor() {
     this.activeTab = "login";
     this.isLoading = false;
+    this.formValidationEnabled = true;
   }
 
   render() {
     return `
-        <section class="auth-page">
-          <div class="auth-background">
-            <div class="auth-shapes">
-              <div class="shape shape-1"></div>
-              <div class="shape shape-2"></div>
-              <div class="shape shape-3"></div>
-            </div>
+      <section class="auth-page">
+        <div class="auth-background">
+          <div class="auth-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
           </div>
-          
-          <div class="container">
-            <div class="auth-container">
-              <header class="auth-header">
-                <div class="auth-logo">
-                  <i class="fas fa-book-open"></i>
-                </div>
-                <h1>Dicoding Stories</h1>
-                <p>Bergabunglah dengan komunitas untuk berbagi cerita</p>
-              </header>
-              
-              <div class="auth-content">
-                <div class="auth-tabs" role="tablist">
-                  <button 
-                    id="login-tab" 
-                    class="auth-tab active" 
-                    type="button"
-                    role="tab"
-                    aria-selected="true"
-                    aria-controls="login-form-container"
-                  >
-                    <i class="fas fa-sign-in-alt"></i>
-                    Masuk
-                  </button>
-                  <button 
-                    id="register-tab" 
-                    class="auth-tab" 
-                    type="button"
-                    role="tab"
-                    aria-selected="false"
-                    aria-controls="register-form-container"
-                  >
-                    <i class="fas fa-user-plus"></i>
-                    Daftar
-                  </button>
-                </div>
-  
-                <div id="login-form-container" class="auth-form-container" role="tabpanel" aria-labelledby="login-tab">
-                  <form id="login-form" class="auth-form" novalidate>
-                    <div class="form-group">
-                      <label for="login-email" class="form-label">
+        </div>
+        
+        <div class="container">
+          <div class="auth-container">
+            <header class="auth-header">
+              <div class="auth-logo">
+                <i class="fas fa-book-open"></i>
+              </div>
+              <h1>Dicoding Stories</h1>
+              <p>Bergabunglah dengan komunitas untuk berbagi cerita</p>
+            </header>
+            
+            <div class="auth-content">
+              <div class="auth-tabs" role="tablist">
+                <button 
+                  id="login-tab" 
+                  class="auth-tab active" 
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="login-form-container"
+                >
+                  <i class="fas fa-sign-in-alt"></i>
+                  Masuk
+                </button>
+                <button 
+                  id="register-tab" 
+                  class="auth-tab" 
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="register-form-container"
+                >
+                  <i class="fas fa-user-plus"></i>
+                  Daftar
+                </button>
+              </div>
+
+              <div id="login-form-container" class="auth-form-container" role="tabpanel" aria-labelledby="login-tab">
+                <form id="login-form" class="auth-form" novalidate>
+                  <div class="form-group">
+                    <label for="login-email" class="form-label">
+                      <i class="fas fa-envelope"></i>
+                      Email
+                    </label>
+                    <div class="input-group">
+                      <span class="input-icon">
                         <i class="fas fa-envelope"></i>
-                        Email
-                      </label>
-                      <div class="input-group">
-                        <span class="input-icon">
-                          <i class="fas fa-envelope"></i>
-                        </span>
-                        <input 
-                          type="email" 
-                          id="login-email" 
-                          name="email" 
-                          class="form-input" 
-                          placeholder="example@email.com"
-                          required
-                          autocomplete="email"
-                          aria-describedby="login-email-help"
-                        >
-                      </div>
-                      <small id="login-email-help" class="sr-only">Masukkan alamat email yang valid</small>
+                      </span>
+                      <input 
+                        type="email" 
+                        id="login-email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="example@email.com"
+                        required
+                        autocomplete="email"
+                        aria-describedby="login-email-help"
+                      >
                     </div>
-  
-                    <div class="form-group">
-                      <label for="login-password" class="form-label">
+                    <small id="login-email-help" class="sr-only">Masukkan alamat email yang valid</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="login-password" class="form-label">
+                      <i class="fas fa-lock"></i>
+                      Password
+                    </label>
+                    <div class="input-group">
+                      <span class="input-icon">
                         <i class="fas fa-lock"></i>
-                        Password
-                      </label>
-                      <div class="input-group">
-                        <span class="input-icon">
-                          <i class="fas fa-lock"></i>
-                        </span>
-                        <input 
-                          type="password" 
-                          id="login-password" 
-                          name="password" 
-                          class="form-input" 
-                          placeholder="Masukkan password"
-                          required
-                          autocomplete="current-password"
-                        >
-                        <button type="button" class="password-toggle" aria-label="Toggle password visibility">
-                          <i class="fas fa-eye"></i>
-                        </button>
-                      </div>
+                      </span>
+                      <input 
+                        type="password" 
+                        id="login-password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="Masukkan password"
+                        required
+                        autocomplete="current-password"
+                      >
+                      <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                      </button>
                     </div>
-  
-                    <button type="submit" id="login-submit" class="auth-submit-button">
-                      <span class="btn-text">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Masuk
-                      </span>
-                      <span class="btn-loading" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Memproses...
-                      </span>
-                    </button>
-                  </form>
-                </div>
-  
-                <div id="register-form-container" class="auth-form-container" style="display: none;" role="tabpanel" aria-labelledby="register-tab">
-                  <form id="register-form" class="auth-form" novalidate>
-                    <div class="form-group">
-                      <label for="register-name" class="form-label">
+                  </div>
+
+                  <button type="submit" id="login-submit" class="auth-submit-button">
+                    <span class="btn-text">
+                      <i class="fas fa-sign-in-alt"></i>
+                      Masuk
+                    </span>
+                    <span class="btn-loading" style="display: none;">
+                      <i class="fas fa-spinner fa-spin"></i>
+                      Memproses...
+                    </span>
+                  </button>
+                </form>
+              </div>
+
+              <div id="register-form-container" class="auth-form-container" style="display: none;" role="tabpanel" aria-labelledby="register-tab">
+                <form id="register-form" class="auth-form" novalidate>
+                  <div class="form-group">
+                    <label for="register-name" class="form-label">
+                      <i class="fas fa-user"></i>
+                      Nama Lengkap
+                    </label>
+                    <div class="input-group">
+                      <span class="input-icon">
                         <i class="fas fa-user"></i>
-                        Nama Lengkap
-                      </label>
-                      <div class="input-group">
-                        <span class="input-icon">
-                          <i class="fas fa-user"></i>
-                        </span>
-                        <input 
-                          type="text" 
-                          id="register-name" 
-                          name="name" 
-                          class="form-input" 
-                          placeholder="Masukkan nama lengkap"
-                          required
-                          autocomplete="name"
-                        >
-                      </div>
+                      </span>
+                      <input 
+                        type="text" 
+                        id="register-name" 
+                        name="name" 
+                        class="form-input" 
+                        placeholder="Masukkan nama lengkap"
+                        required
+                        autocomplete="name"
+                        minlength="2"
+                      >
                     </div>
-  
-                    <div class="form-group">
-                      <label for="register-email" class="form-label">
+                  </div>
+
+                  <div class="form-group">
+                    <label for="register-email" class="form-label">
+                      <i class="fas fa-envelope"></i>
+                      Email
+                    </label>
+                    <div class="input-group">
+                      <span class="input-icon">
                         <i class="fas fa-envelope"></i>
-                        Email
-                      </label>
-                      <div class="input-group">
-                        <span class="input-icon">
-                          <i class="fas fa-envelope"></i>
-                        </span>
-                        <input 
-                          type="email" 
-                          id="register-email" 
-                          name="email" 
-                          class="form-input" 
-                          placeholder="example@email.com"
-                          required
-                          autocomplete="email"
-                          aria-describedby="register-email-help"
-                        >
-                      </div>
-                      <small id="register-email-help" class="form-help">Email akan digunakan untuk login</small>
+                      </span>
+                      <input 
+                        type="email" 
+                        id="register-email" 
+                        name="email" 
+                        class="form-input" 
+                        placeholder="example@email.com"
+                        required
+                        autocomplete="email"
+                        aria-describedby="register-email-help"
+                      >
                     </div>
-  
-                    <div class="form-group">
-                      <label for="register-password" class="form-label">
+                    <small id="register-email-help" class="form-help">Email akan digunakan untuk login</small>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="register-password" class="form-label">
+                      <i class="fas fa-lock"></i>
+                      Password
+                    </label>
+                    <div class="input-group">
+                      <span class="input-icon">
                         <i class="fas fa-lock"></i>
-                        Password
-                      </label>
-                      <div class="input-group">
-                        <span class="input-icon">
-                          <i class="fas fa-lock"></i>
-                        </span>
-                        <input 
-                          type="password" 
-                          id="register-password" 
-                          name="password" 
-                          class="form-input" 
-                          placeholder="Minimal 8 karakter"
-                          required
-                          autocomplete="new-password"
-                          minlength="8"
-                          aria-describedby="register-password-help"
-                        >
-                        <button type="button" class="password-toggle" aria-label="Toggle password visibility">
-                          <i class="fas fa-eye"></i>
-                        </button>
-                      </div>
-                      <small id="register-password-help" class="form-help">Password harus minimal 8 karakter</small>
+                      </span>
+                      <input 
+                        type="password" 
+                        id="register-password" 
+                        name="password" 
+                        class="form-input" 
+                        placeholder="Minimal 8 karakter"
+                        required
+                        autocomplete="new-password"
+                        minlength="8"
+                        aria-describedby="register-password-help"
+                      >
+                      <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                      </button>
                     </div>
-  
-                    <button type="submit" id="register-submit" class="auth-submit-button">
-                      <span class="btn-text">
-                        <i class="fas fa-user-plus"></i>
-                        Daftar
-                      </span>
-                      <span class="btn-loading" style="display: none;">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        Mendaftar...
-                      </span>
-                    </button>
-                  </form>
-                </div>
-  
-                <div id="auth-message" class="auth-message" style="display: none;" role="status" aria-live="polite"></div>
-                
-                <div class="auth-footer">
-                  <p class="guest-info">
-                    <i class="fas fa-info-circle"></i>
-                    Atau gunakan mode tamu untuk melihat stories tanpa login
-                  </p>
-                  <a href="#/" class="guest-link">
-                    <i class="fas fa-eye"></i>
-                    Lihat sebagai Tamu
-                  </a>
-                </div>
+                    <small id="register-password-help" class="form-help">Password harus minimal 8 karakter</small>
+                  </div>
+
+                  <button type="submit" id="register-submit" class="auth-submit-button">
+                    <span class="btn-text">
+                      <i class="fas fa-user-plus"></i>
+                      Daftar
+                    </span>
+                    <span class="btn-loading" style="display: none;">
+                      <i class="fas fa-spinner fa-spin"></i>
+                      Mendaftar...
+                    </span>
+                  </button>
+                </form>
+              </div>
+
+              <div id="auth-message" class="auth-message" style="display: none;" role="status" aria-live="polite"></div>
+              
+              <div class="auth-footer">
+                <p class="guest-info">
+                  <i class="fas fa-info-circle"></i>
+                  Atau gunakan mode tamu untuk melihat stories tanpa login
+                </p>
+                <a href="#/" class="guest-link">
+                  <i class="fas fa-eye"></i>
+                  Lihat sebagai Tamu
+                </a>
               </div>
             </div>
           </div>
-        </section>
-      `;
+        </div>
+      </section>
+    `;
   }
 
   afterRender() {
     this.setupTabSwitching();
     this.setupPasswordToggle();
     this.setupFormValidation();
+    this.setupAccessibility();
   }
 
   setupTabSwitching() {
@@ -235,6 +238,20 @@ export class LoginView {
     registerTab.addEventListener("click", () => {
       this.switchToTab("register");
     });
+
+    loginTab.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        this.switchToTab("login");
+      }
+    });
+
+    registerTab.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        this.switchToTab("register");
+      }
+    });
   }
 
   setupPasswordToggle() {
@@ -246,11 +263,11 @@ export class LoginView {
         if (input.type === "password") {
           input.type = "text";
           icon.className = "fas fa-eye-slash";
-          toggle.setAttribute("aria-label", "Hide password");
+          toggle.setAttribute("aria-label", "Sembunyikan password");
         } else {
           input.type = "password";
           icon.className = "fas fa-eye";
-          toggle.setAttribute("aria-label", "Show password");
+          toggle.setAttribute("aria-label", "Tampilkan password");
         }
       });
     });
@@ -264,7 +281,22 @@ export class LoginView {
     });
   }
 
+  setupAccessibility() {
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        this.clearMessages();
+      }
+    });
+
+    const firstInput = document.getElementById("login-email");
+    if (firstInput) {
+      setTimeout(() => firstInput.focus(), 100);
+    }
+  }
+
   validateField(input) {
+    if (!this.formValidationEnabled) return true;
+
     const group = input.closest(".form-group");
     const errorElement = group.querySelector(".field-error");
 
@@ -291,6 +323,9 @@ export class LoginView {
     ) {
       isValid = false;
       errorMessage = "Password minimal 8 karakter";
+    } else if (input.name === "name" && input.value && input.value.length < 2) {
+      isValid = false;
+      errorMessage = "Nama minimal 2 karakter";
     }
 
     if (!isValid) {
@@ -307,6 +342,7 @@ export class LoginView {
     errorElement.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
     group.appendChild(errorElement);
     input.classList.add("error");
+    input.setAttribute("aria-invalid", "true");
   }
 
   clearFieldError(input) {
@@ -316,12 +352,11 @@ export class LoginView {
       errorElement.remove();
     }
     input.classList.remove("error");
+    input.removeAttribute("aria-invalid");
   }
 
   switchToTab(tab) {
-    if (this.isLoading) {
-      return;
-    }
+    if (this.isLoading) return;
 
     const loginTab = document.getElementById("login-tab");
     const registerTab = document.getElementById("register-tab");
@@ -430,9 +465,9 @@ export class LoginView {
       };
 
       messageElement.innerHTML = `
-          <i class="${icons[type]}"></i>
-          <span>${message}</span>
-        `;
+        <i class="${icons[type]}"></i>
+        <span>${message}</span>
+      `;
       messageElement.className = `auth-message ${type}`;
       messageElement.style.display = "flex";
       messageElement.setAttribute("aria-live", "polite");
@@ -448,6 +483,14 @@ export class LoginView {
       messageElement.innerHTML = "";
       messageElement.className = "auth-message";
     }
+
+    document
+      .querySelectorAll(".field-error")
+      .forEach((error) => error.remove());
+    document.querySelectorAll(".form-input.error").forEach((input) => {
+      input.classList.remove("error");
+      input.removeAttribute("aria-invalid");
+    });
   }
 
   showSuccess(message) {
@@ -471,20 +514,17 @@ export class LoginView {
     if (loginForm) loginForm.reset();
     if (registerForm) registerForm.reset();
 
-    // Clear field errors
-    document
-      .querySelectorAll(".field-error")
-      .forEach((error) => error.remove());
-    document
-      .querySelectorAll(".form-input.error")
-      .forEach((input) => input.classList.remove("error"));
+    this.clearMessages();
   }
 
   validateLoginForm(data) {
+    this.formValidationEnabled = false;
+
     let isValid = true;
+    const errors = [];
 
     if (!data.email) {
-      this.showError("Email harus diisi");
+      errors.push("Email harus diisi");
       const emailInput = document.getElementById("login-email");
       if (emailInput) {
         emailInput.focus();
@@ -492,7 +532,7 @@ export class LoginView {
       }
       isValid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      this.showError("Format email tidak valid");
+      errors.push("Format email tidak valid");
       const emailInput = document.getElementById("login-email");
       if (emailInput) {
         emailInput.focus();
@@ -502,23 +542,31 @@ export class LoginView {
     }
 
     if (!data.password) {
-      this.showError("Password harus diisi");
+      errors.push("Password harus diisi");
       const passwordInput = document.getElementById("login-password");
-      if (passwordInput) {
+      if (passwordInput && isValid) {
         passwordInput.focus();
         this.showFieldError(passwordInput, "Password harus diisi");
       }
       isValid = false;
     }
 
+    if (!isValid) {
+      this.showError(errors[0]);
+    }
+
+    this.formValidationEnabled = true;
     return isValid;
   }
 
   validateRegisterForm(data) {
+    this.formValidationEnabled = false;
+
     let isValid = true;
+    const errors = [];
 
     if (!data.name) {
-      this.showError("Nama harus diisi");
+      errors.push("Nama harus diisi");
       const nameInput = document.getElementById("register-name");
       if (nameInput) {
         nameInput.focus();
@@ -526,7 +574,7 @@ export class LoginView {
       }
       isValid = false;
     } else if (data.name.length < 2) {
-      this.showError("Nama harus minimal 2 karakter");
+      errors.push("Nama harus minimal 2 karakter");
       const nameInput = document.getElementById("register-name");
       if (nameInput) {
         nameInput.focus();
@@ -536,17 +584,17 @@ export class LoginView {
     }
 
     if (!data.email) {
-      this.showError("Email harus diisi");
+      errors.push("Email harus diisi");
       const emailInput = document.getElementById("register-email");
-      if (emailInput) {
+      if (emailInput && isValid) {
         emailInput.focus();
         this.showFieldError(emailInput, "Email harus diisi");
       }
       isValid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      this.showError("Format email tidak valid");
+      errors.push("Format email tidak valid");
       const emailInput = document.getElementById("register-email");
-      if (emailInput) {
+      if (emailInput && isValid) {
         emailInput.focus();
         this.showFieldError(emailInput, "Format email tidak valid");
       }
@@ -554,23 +602,28 @@ export class LoginView {
     }
 
     if (!data.password) {
-      this.showError("Password harus diisi");
+      errors.push("Password harus diisi");
       const passwordInput = document.getElementById("register-password");
-      if (passwordInput) {
+      if (passwordInput && isValid) {
         passwordInput.focus();
         this.showFieldError(passwordInput, "Password harus diisi");
       }
       isValid = false;
     } else if (data.password.length < 8) {
-      this.showError("Password harus minimal 8 karakter");
+      errors.push("Password harus minimal 8 karakter");
       const passwordInput = document.getElementById("register-password");
-      if (passwordInput) {
+      if (passwordInput && isValid) {
         passwordInput.focus();
         this.showFieldError(passwordInput, "Password harus minimal 8 karakter");
       }
       isValid = false;
     }
 
+    if (!isValid) {
+      this.showError(errors[0]);
+    }
+
+    this.formValidationEnabled = true;
     return isValid;
   }
 }

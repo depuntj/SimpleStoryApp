@@ -5,161 +5,154 @@ export class StoriesView {
   constructor() {
     this.map = null;
     this.markers = [];
-    this.mapInitialized = false;
-    this.mapInitializationInProgress = false;
-    this.mapContainerId = null;
-    this.currentViewMode = "grid";
     this.storiesData = [];
+    this.isMapReady = false;
+    this.currentFilter = "all";
+    this.currentView = "grid";
   }
 
   render() {
     return `
-      <section class="stories-page">
-        <div class="container">
-          <header class="page-header">
-            <div class="header-content">
-              <h1>
-                <i class="fas fa-book-open"></i>
-                Dicoding Stories
-              </h1>
-              <p>Kumpulan cerita dari komunitas Dicoding</p>
-            </div>
-            
-            <div class="header-actions">
-              <div class="view-toggle">
-                <button id="grid-view" class="view-btn active" aria-label="Tampilan grid">
+      <div class="stories-page">
+        <div class="stories-hero">
+          <div class="hero-content">
+            <h1 class="hero-title">
+              <i class="fas fa-book-open" aria-hidden="true"></i>
+              Dicoding Stories
+            </h1>
+            <p class="hero-subtitle">Jelajahi cerita inspiratif dari komunitas developer Indonesia</p>
+          </div>
+          <div class="hero-actions">
+            <a href="#/add" class="btn-add-story" aria-label="Buat story baru">
+              <i class="fas fa-plus"></i>
+              <span>Buat Story</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="stories-container">
+          <div class="stories-toolbar">
+            <div class="toolbar-left">
+              <div class="view-switcher" role="group" aria-label="Mode tampilan">
+                <button class="view-btn active" data-view="grid" aria-label="Tampilan grid">
                   <i class="fas fa-th"></i>
                 </button>
-                <button id="list-view" class="view-btn" aria-label="Tampilan list">
+                <button class="view-btn" data-view="list" aria-label="Tampilan list">
                   <i class="fas fa-list"></i>
                 </button>
               </div>
               
-              <a href="#/add" class="add-story-fab" aria-label="Tambah story baru">
-                <i class="fas fa-plus"></i>
-                <span>Tambah Story</span>
-              </a>
-            </div>
-          </header>
-          
-          <div class="stories-stats" id="stories-stats" style="display: none;">
-            <div class="stat-item">
-              <i class="fas fa-images"></i>
-              <div>
-                <span class="stat-number" id="total-stories">0</span>
-                <span class="stat-label">Total Stories</span>
+              <div class="filter-tabs" role="group" aria-label="Filter stories">
+                <button class="filter-tab active" data-filter="all">
+                  <i class="fas fa-globe"></i>
+                  <span>Semua</span>
+                </button>
+                <button class="filter-tab" data-filter="location">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <span>Berlokasi</span>
+                </button>
               </div>
             </div>
-            <div class="stat-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <div>
-                <span class="stat-number" id="stories-with-location">0</span>
-                <span class="stat-label">Dengan Lokasi</span>
-              </div>
-            </div>
-            <div class="stat-item">
-              <i class="fas fa-users"></i>
-              <div>
-                <span class="stat-number" id="unique-authors">0</span>
-                <span class="stat-label">Kontributor</span>
+
+            <div class="toolbar-right">
+              <div class="stories-stats" id="stories-stats" aria-label="Statistik stories">
+                <div class="stat-item">
+                  <span class="stat-number" id="total-count">0</span>
+                  <span class="stat-label">Stories</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number" id="location-count">0</span>
+                  <span class="stat-label">Berlokasi</span>
+                </div>
               </div>
             </div>
           </div>
-          
+
           <div class="stories-content">
-            <div class="stories-section">
-              <div class="section-header">
-                <h2>
-                  <i class="fas fa-images"></i>
-                  Stories Terbaru
-                </h2>
-                <div class="filter-controls">
-                  <button id="filter-all" class="filter-btn active">
-                    <i class="fas fa-globe"></i>
-                    Semua
-                  </button>
-                  <button id="filter-location" class="filter-btn">
-                    <i class="fas fa-map-marker-alt"></i>
-                    Dengan Lokasi
-                  </button>
-                </div>
-              </div>
-              
-              <div id="stories-container" class="stories-list grid-view" role="main">
-                <!-- Stories akan dimuat di sini -->
+            <div class="stories-grid-container">
+              <div id="stories-container" class="stories-grid" role="main" aria-label="Daftar stories">
+                
               </div>
             </div>
-            
-            <div class="map-section">
-              <div class="section-header">
+
+            <div class="stories-map-container">
+              <div class="map-header">
                 <h2>
                   <i class="fas fa-map"></i>
-                  Peta Lokasi Stories
+                  Peta Stories
                 </h2>
                 <div class="map-controls">
-                  <button id="center-map" class="map-control-btn" title="Pusatkan peta">
+                  <button class="map-btn" id="center-map" title="Pusatkan peta" aria-label="Pusatkan peta">
                     <i class="fas fa-crosshairs"></i>
                   </button>
-                  <button id="fullscreen-map" class="map-control-btn" title="Layar penuh">
+                  <button class="map-btn" id="fullscreen-map" title="Layar penuh" aria-label="Mode layar penuh">
                     <i class="fas fa-expand"></i>
                   </button>
                 </div>
               </div>
-              
-              <div class="map-container">
-                <div id="map-container" class="location-map"></div>
-                <div class="map-info" id="map-info">
-                  <i class="fas fa-info-circle"></i>
-                  <span>Klik marker untuk melihat detail story</span>
-                </div>
+              <div id="stories-map" class="stories-map" role="img" aria-label="Peta interaktif lokasi stories"></div>
+              <div class="map-info" id="map-info">
+                <i class="fas fa-info-circle"></i>
+                <span>Klik marker untuk melihat detail story</span>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     `;
   }
 
-  afterRender() {
-    this.setupViewToggle();
-    this.setupFilters();
-    this.setupMapControls();
+  async afterRender() {
+    try {
+      this.setupEventHandlers();
+      this.setupAccessibility();
+      await this.initializeMap();
+    } catch (error) {
+      console.error("Error in StoriesView afterRender:", error);
+    }
   }
 
-  setupViewToggle() {
-    const gridBtn = document.getElementById("grid-view");
-    const listBtn = document.getElementById("list-view");
+  setupEventHandlers() {
+    try {
+      this.setupViewSwitcher();
+      this.setupFilterTabs();
+      this.setupMapControls();
+    } catch (error) {
+      console.warn("Error setting up event handlers:", error);
+    }
+  }
+
+  setupViewSwitcher() {
+    const viewBtns = document.querySelectorAll(".view-btn");
     const container = document.getElementById("stories-container");
 
-    gridBtn.addEventListener("click", () => {
-      this.currentViewMode = "grid";
-      container.className = "stories-list grid-view";
-      gridBtn.classList.add("active");
-      listBtn.classList.remove("active");
-    });
+    viewBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const view = btn.dataset.view;
+        this.currentView = view;
 
-    listBtn.addEventListener("click", () => {
-      this.currentViewMode = "list";
-      container.className = "stories-list list-view";
-      listBtn.classList.add("active");
-      gridBtn.classList.remove("active");
+        viewBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        container.className = `stories-${view}`;
+        this.announceToScreenReader(`Tampilan diubah ke mode ${view}`);
+      });
     });
   }
 
-  setupFilters() {
-    const allBtn = document.getElementById("filter-all");
-    const locationBtn = document.getElementById("filter-location");
+  setupFilterTabs() {
+    const filterTabs = document.querySelectorAll(".filter-tab");
 
-    allBtn.addEventListener("click", () => {
-      this.filterStories("all");
-      allBtn.classList.add("active");
-      locationBtn.classList.remove("active");
-    });
+    filterTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const filter = tab.dataset.filter;
+        this.currentFilter = filter;
 
-    locationBtn.addEventListener("click", () => {
-      this.filterStories("location");
-      locationBtn.classList.add("active");
-      allBtn.classList.remove("active");
+        filterTabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        this.applyFilter(filter);
+      });
     });
   }
 
@@ -167,92 +160,111 @@ export class StoriesView {
     const centerBtn = document.getElementById("center-map");
     const fullscreenBtn = document.getElementById("fullscreen-map");
 
-    centerBtn.addEventListener("click", () => {
-      if (this.map && this.markers.length > 0) {
-        const group = new L.featureGroup(this.markers);
-        this.map.fitBounds(group.getBounds().pad(0.1));
-      }
-    });
+    if (centerBtn) {
+      centerBtn.addEventListener("click", () => this.centerMap());
+    }
 
-    fullscreenBtn.addEventListener("click", () => {
-      this.toggleMapFullscreen();
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener("click", () => this.toggleFullscreen());
+    }
+  }
+
+  setupAccessibility() {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.closeAnyModal();
+      }
     });
   }
 
-  filterStories(type) {
-    const stories = document.querySelectorAll(".story-card");
+  async initializeMap() {
+    try {
+      const mapContainer = document.getElementById("stories-map");
+      if (!mapContainer || typeof L === "undefined") return;
 
-    stories.forEach((story) => {
-      const hasLocation = story.querySelector(".story-location");
+      this.map = L.map("stories-map", {
+        zoomControl: false,
+        attributionControl: false,
+      }).setView([CONFIG.DEFAULT_LOCATION.lat, CONFIG.DEFAULT_LOCATION.lng], 6);
 
-      if (type === "all") {
-        story.style.display = "block";
-      } else if (type === "location") {
-        story.style.display = hasLocation ? "block" : "none";
-      }
-    });
+      L.control.zoom({ position: "bottomright" }).addTo(this.map);
+      L.control
+        .attribution({ position: "bottomleft", prefix: false })
+        .addTo(this.map);
 
-    this.updateVisibleCount();
-  }
+      const tileLayer = L.tileLayer(CONFIG.MAP_TILES.openstreetmap.url, {
+        attribution: CONFIG.MAP_TILES.openstreetmap.attribution,
+        maxZoom: 18,
+      });
 
-  updateVisibleCount() {
-    const visible = document.querySelectorAll(
-      '.story-card[style*="block"], .story-card:not([style])'
-    ).length;
-    const mapInfo = document.getElementById("map-info");
-    if (mapInfo && visible > 0) {
-      mapInfo.innerHTML = `
-        <i class="fas fa-info-circle"></i>
-        <span>Menampilkan ${visible} stories</span>
-      `;
+      tileLayer.addTo(this.map);
+      this.isMapReady = true;
+
+      this.map.on("load", () => {
+        this.announceToScreenReader("Peta berhasil dimuat");
+      });
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      this.showMapError();
     }
   }
 
   renderStoriesList(stories) {
-    const container = document.getElementById("stories-container");
-    const statsContainer = document.getElementById("stories-stats");
-
-    if (!container) {
-      console.error("Stories container not found");
-      return;
-    }
-
     this.storiesData = stories;
     this.updateStats(stories);
 
-    if (statsContainer) {
-      statsContainer.style.display = "grid";
+    const container = document.getElementById("stories-container");
+    if (!container) return;
+
+    if (stories.length === 0) {
+      this.showEmptyState();
+      return;
     }
 
     container.innerHTML = stories
-      .map((story) => this.renderStoryCard(story))
+      .map((story, index) => this.createStoryCard(story, index))
       .join("");
-
-    this.scheduleMapInitialization(stories);
     this.setupStoryInteractions();
+    this.addMarkersToMap(stories);
+
+    this.announceToScreenReader(`${stories.length} stories berhasil dimuat`);
   }
 
-  renderStoryCard(story) {
+  createStoryCard(story, index) {
     const hasLocation = story.lat && story.lon;
+    const truncatedDesc =
+      story.description.length > 120
+        ? story.description.substring(0, 120) + "..."
+        : story.description;
 
     return `
       <article class="story-card ${hasLocation ? "has-location" : ""}" 
-               tabindex="0" 
+               data-story-id="${story.id}"
+               tabindex="0"
                role="article"
-               data-story-id="${story.id}">
+               aria-labelledby="story-author-${index}"
+               aria-describedby="story-desc-${index}">
+        
         <div class="story-image">
           <img src="${story.photoUrl}" 
-               alt="Story by ${story.name}" 
+               alt="Foto story dari ${
+                 story.name
+               }: ${story.description.substring(0, 50)}..." 
                loading="lazy"
-               onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 300\"><rect width=\"100%\" height=\"100%\" fill=\"%23f3f4f6\"/><text x=\"50%\" y=\"50%\" text-anchor=\"middle\" fill=\"%23d1d5db\" font-family=\"Arial\">No Image</text></svg>'">
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="image-placeholder" style="display: none;">
+            <i class="fas fa-image"></i>
+            <span>Gambar tidak tersedia</span>
+          </div>
+          
           <div class="story-overlay">
-            <button class="story-action" aria-label="Lihat detail">
+            <button class="story-action view-btn" aria-label="Lihat detail story">
               <i class="fas fa-eye"></i>
             </button>
             ${
               hasLocation
                 ? `
-              <button class="story-location-btn" aria-label="Lihat di peta">
+              <button class="story-action location-btn" aria-label="Lihat di peta">
                 <i class="fas fa-map-marker-alt"></i>
               </button>
             `
@@ -260,42 +272,25 @@ export class StoriesView {
             }
           </div>
         </div>
-        
+
         <div class="story-content">
           <div class="story-header">
-            <h3 class="story-author">
-              <i class="fas fa-user-circle"></i>
-              ${story.name}
-            </h3>
-            <time class="story-date" datetime="${story.createdAt}">
-              <i class="fas fa-calendar-alt"></i>
-              ${showFormattedDate(story.createdAt, "id-ID")}
-            </time>
-          </div>
-          
-          <p class="story-description">${story.description}</p>
-          
-          <div class="story-footer">
-            ${
-              hasLocation
-                ? `
-              <div class="story-location">
-                <i class="fas fa-map-pin"></i>
-                <span class="location-coords">
-                  ${story.lat.toFixed(4)}, ${story.lon.toFixed(4)}
-                </span>
+            <div class="author-info">
+              <div class="author-avatar">
+                <i class="fas fa-user-circle"></i>
               </div>
-            `
-                : `
-              <div class="story-no-location">
-                <i class="fas fa-globe"></i>
-                <span>Lokasi tidak tersedia</span>
+              <div class="author-details">
+                <h3 class="author-name" id="story-author-${index}">${
+      story.name
+    }</h3>
+                <time class="story-date" datetime="${story.createdAt}">
+                  ${this.getRelativeTime(story.createdAt)}
+                </time>
               </div>
-            `
-            }
+            </div>
             
             <div class="story-actions">
-              <button class="action-btn like-btn" aria-label="Suka story ini">
+              <button class="action-btn like-btn" aria-label="Suka story" data-liked="false">
                 <i class="far fa-heart"></i>
               </button>
               <button class="action-btn share-btn" aria-label="Bagikan story">
@@ -303,6 +298,19 @@ export class StoriesView {
               </button>
             </div>
           </div>
+
+          <p class="story-description" id="story-desc-${index}">${truncatedDesc}</p>
+
+          ${
+            hasLocation
+              ? `
+            <div class="story-location">
+              <i class="fas fa-map-pin"></i>
+              <span>Lokasi tersedia</span>
+            </div>
+          `
+              : ""
+          }
         </div>
       </article>
     `;
@@ -310,43 +318,55 @@ export class StoriesView {
 
   setupStoryInteractions() {
     document.querySelectorAll(".story-card").forEach((card) => {
+      const storyId = card.dataset.storyId;
+
       card.addEventListener("click", (e) => {
         if (
-          !e.target.closest(".story-actions") &&
-          !e.target.closest(".story-overlay")
+          !e.target.closest(".story-overlay") &&
+          !e.target.closest(".story-actions")
         ) {
-          this.showStoryDetail(card.dataset.storyId);
+          this.showStoryDetail(storyId);
         }
       });
 
       card.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          this.showStoryDetail(card.dataset.storyId);
+          this.showStoryDetail(storyId);
         }
       });
-    });
 
-    document.querySelectorAll(".story-location-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const card = e.target.closest(".story-card");
-        this.focusStoryOnMap(card.dataset.storyId);
-      });
-    });
+      const viewBtn = card.querySelector(".view-btn");
+      if (viewBtn) {
+        viewBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.showStoryDetail(storyId);
+        });
+      }
 
-    document.querySelectorAll(".like-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.toggleLike(btn);
-      });
-    });
+      const locationBtn = card.querySelector(".location-btn");
+      if (locationBtn) {
+        locationBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.focusOnMap(storyId);
+        });
+      }
 
-    document.querySelectorAll(".share-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.shareStory(btn.closest(".story-card").dataset.storyId);
-      });
+      const likeBtn = card.querySelector(".like-btn");
+      if (likeBtn) {
+        likeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.toggleLike(likeBtn);
+        });
+      }
+
+      const shareBtn = card.querySelector(".share-btn");
+      if (shareBtn) {
+        shareBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.shareStory(storyId);
+        });
+      }
     });
   }
 
@@ -357,39 +377,43 @@ export class StoriesView {
     const modal = document.createElement("div");
     modal.className = "story-modal";
     modal.innerHTML = `
-      <div class="modal-backdrop" role="dialog" aria-labelledby="modal-title" aria-modal="true">
-        <div class="modal-content">
-          <header class="modal-header">
-            <h2 id="modal-title">
-              <i class="fas fa-user-circle"></i>
-              ${story.name}
-            </h2>
-            <button class="modal-close" aria-label="Tutup">
-              <i class="fas fa-times"></i>
-            </button>
-          </header>
+      <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-container">
+          <button class="modal-close" aria-label="Tutup dialog">
+            <i class="fas fa-times"></i>
+          </button>
           
-          <div class="modal-body">
-            <img src="${story.photoUrl}" alt="Story by ${
-      story.name
-    }" class="modal-image">
+          <div class="modal-content">
+            <div class="modal-image">
+              <img src="${story.photoUrl}" alt="Foto story dari ${story.name}">
+            </div>
             
             <div class="modal-info">
-              <p class="modal-description">${story.description}</p>
-              
-              <div class="modal-meta">
-                <div class="meta-item">
-                  <i class="fas fa-calendar-alt"></i>
-                  <span>${showFormattedDate(story.createdAt, "id-ID")}</span>
+              <div class="modal-header">
+                <div class="author-info">
+                  <div class="author-avatar">
+                    <i class="fas fa-user-circle"></i>
+                  </div>
+                  <div>
+                    <h2 id="modal-title">${story.name}</h2>
+                    <time datetime="${story.createdAt}">
+                      ${showFormattedDate(story.createdAt)}
+                    </time>
+                  </div>
                 </div>
+              </div>
+              
+              <div class="modal-body">
+                <p class="story-text">${story.description}</p>
+                
                 ${
                   story.lat && story.lon
                     ? `
-                  <div class="meta-item">
+                  <div class="story-location-info">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span>${story.lat.toFixed(6)}, ${story.lon.toFixed(
-                        6
-                      )}</span>
+                    <span>Lokasi: ${parseFloat(story.lat).toFixed(
+                      4
+                    )}, ${parseFloat(story.lon).toFixed(4)}</span>
                   </div>
                 `
                     : ""
@@ -402,30 +426,120 @@ export class StoriesView {
     `;
 
     document.body.appendChild(modal);
+    document.body.style.overflow = "hidden";
 
-    modal.querySelector(".modal-close").addEventListener("click", () => {
-      modal.remove();
+    const closeBtn = modal.querySelector(".modal-close");
+    const overlay = modal.querySelector(".modal-overlay");
+
+    const closeModal = () => {
+      document.body.removeChild(modal);
+      document.body.style.overflow = "";
+    };
+
+    closeBtn.addEventListener("click", closeModal);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeModal();
     });
 
-    modal.querySelector(".modal-backdrop").addEventListener("click", (e) => {
-      if (e.target === e.currentTarget) {
-        modal.remove();
-      }
-    });
-
-    document.addEventListener("keydown", function closeOnEscape(e) {
+    document.addEventListener("keydown", function handleEscape(e) {
       if (e.key === "Escape") {
-        modal.remove();
-        document.removeEventListener("keydown", closeOnEscape);
+        closeModal();
+        document.removeEventListener("keydown", handleEscape);
       }
     });
 
-    modal.querySelector(".modal-close").focus();
+    setTimeout(() => closeBtn.focus(), 100);
   }
 
-  focusStoryOnMap(storyId) {
+  toggleLike(btn) {
+    const icon = btn.querySelector("i");
+    const isLiked = btn.dataset.liked === "true";
+
+    if (isLiked) {
+      icon.className = "far fa-heart";
+      btn.dataset.liked = "false";
+      btn.classList.remove("liked");
+    } else {
+      icon.className = "fas fa-heart";
+      btn.dataset.liked = "true";
+      btn.classList.add("liked");
+    }
+
+    btn.style.transform = "scale(1.2)";
+    setTimeout(() => (btn.style.transform = ""), 200);
+  }
+
+  shareStory(storyId) {
     const story = this.storiesData.find((s) => s.id === storyId);
-    if (!story || !story.lat || !story.lon || !this.map) return;
+    if (!story) return;
+
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `Story by ${story.name}`,
+          text: story.description,
+          url: window.location.href,
+        })
+        .catch(() => this.fallbackShare());
+    } else {
+      this.fallbackShare();
+    }
+  }
+
+  fallbackShare() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      if (window.showToast) {
+        window.showToast("Link berhasil disalin!", "success");
+      }
+    });
+  }
+
+  addMarkersToMap(stories) {
+    if (!this.isMapReady) return;
+
+    this.clearMarkers();
+
+    const storiesWithLocation = stories.filter((s) => s.lat && s.lon);
+
+    storiesWithLocation.forEach((story) => {
+      const marker = L.marker([story.lat, story.lon], {
+        icon: this.createCustomIcon(),
+      }).addTo(this.map);
+
+      marker.bindPopup(`
+        <div class="map-popup">
+          <img src="${story.photoUrl}" alt="Story ${
+        story.name
+      }" class="popup-image">
+          <div class="popup-content">
+            <h4>${story.name}</h4>
+            <p>${story.description.substring(0, 80)}...</p>
+            <small>${this.getRelativeTime(story.createdAt)}</small>
+          </div>
+        </div>
+      `);
+
+      this.markers.push(marker);
+    });
+
+    if (this.markers.length > 0) {
+      const group = new L.featureGroup(this.markers);
+      this.map.fitBounds(group.getBounds().pad(0.1));
+    }
+  }
+
+  createCustomIcon() {
+    return L.divIcon({
+      className: "custom-marker",
+      html: '<div class="marker-dot"><i class="fas fa-camera"></i></div>',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
+  }
+
+  focusOnMap(storyId) {
+    const story = this.storiesData.find((s) => s.id === storyId);
+    if (!story || !story.lat || !story.lon) return;
 
     this.map.setView([story.lat, story.lon], 15);
 
@@ -441,339 +555,118 @@ export class StoriesView {
       marker.openPopup();
     }
 
-    document.querySelector(".map-section").scrollIntoView({
+    document.querySelector(".stories-map-container").scrollIntoView({
       behavior: "smooth",
-      block: "start",
     });
   }
 
-  toggleLike(btn) {
-    const icon = btn.querySelector("i");
-    const isLiked = icon.classList.contains("fas");
-
-    if (isLiked) {
-      icon.className = "far fa-heart";
-      btn.classList.remove("liked");
-    } else {
-      icon.className = "fas fa-heart";
-      btn.classList.add("liked");
-    }
-
-    btn.style.transform = "scale(1.2)";
-    setTimeout(() => {
-      btn.style.transform = "";
-    }, 150);
-  }
-
-  shareStory(storyId) {
-    const story = this.storiesData.find((s) => s.id === storyId);
-    if (!story) return;
-
-    if (navigator.share) {
-      navigator.share({
-        title: `Story by ${story.name}`,
-        text: story.description,
-        url: window.location.href,
-      });
-    } else {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        if (typeof window.showToast === "function") {
-          window.showToast("Link disalin ke clipboard", "success");
-        }
-      });
+  centerMap() {
+    if (this.markers.length > 0) {
+      const group = new L.featureGroup(this.markers);
+      this.map.fitBounds(group.getBounds().pad(0.1));
     }
   }
 
-  updateStats(stories) {
-    const totalStories = stories.length;
-    const storiesWithLocation = stories.filter((s) => s.lat && s.lon).length;
-    const uniqueAuthors = new Set(stories.map((s) => s.name)).size;
-
-    this.animateNumber("total-stories", totalStories);
-    this.animateNumber("stories-with-location", storiesWithLocation);
-    this.animateNumber("unique-authors", uniqueAuthors);
-  }
-
-  animateNumber(elementId, targetValue) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    let currentValue = 0;
-    const increment = Math.ceil(targetValue / 20);
-    const timer = setInterval(() => {
-      currentValue += increment;
-      if (currentValue >= targetValue) {
-        currentValue = targetValue;
-        clearInterval(timer);
-      }
-      element.textContent = currentValue;
-    }, 50);
-  }
-
-  scheduleMapInitialization(stories) {
-    if (this.mapInitTimeout) {
-      clearTimeout(this.mapInitTimeout);
-    }
-
-    this.mapInitTimeout = setTimeout(() => {
-      this.safeInitializeMap(stories);
-    }, 1000);
-  }
-
-  safeInitializeMap(stories) {
-    if (this.mapInitializationInProgress) {
-      console.log("Map initialization already in progress, skipping...");
-      return;
-    }
-
-    this.mapInitializationInProgress = true;
-
-    try {
-      const mapContainer = document.getElementById("map-container");
-      if (!mapContainer) {
-        console.warn("Map container tidak ditemukan");
-        this.mapInitializationInProgress = false;
-        return;
-      }
-
-      if (mapContainer._leaflet_id) {
-        console.log("Map container sudah memiliki map, cleanup dulu...");
-        this.forceCleanupMap();
-      }
-
-      if (typeof L === "undefined") {
-        console.error("Leaflet library belum dimuat");
-        this.showMapError();
-        this.mapInitializationInProgress = false;
-        return;
-      }
-
-      console.log("Initializing map...");
-      this.resetMapContainer();
-
-      this.map = L.map("map-container", {
-        zoomControl: true,
-        scrollWheelZoom: true,
-        doubleClickZoom: true,
-        dragging: true,
-      }).setView(
-        [CONFIG.DEFAULT_LOCATION.lat, CONFIG.DEFAULT_LOCATION.lng],
-        10
-      );
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors",
-        maxZoom: 19,
-      }).addTo(this.map);
-
-      this.mapInitialized = true;
-      console.log("Map berhasil diinisialisasi");
-
-      setTimeout(() => {
-        if (this.map && this.mapInitialized) {
-          this.addMarkersToMap(stories);
-        }
-        this.mapInitializationInProgress = false;
-      }, 500);
-    } catch (error) {
-      console.error("Error initializing map:", error);
-      this.showMapError();
-      this.mapInitializationInProgress = false;
-    }
-  }
-
-  addMarkersToMap(stories) {
-    if (!this.map || !this.mapInitialized) {
-      console.warn("Map belum ready untuk markers");
-      return;
-    }
-
-    try {
-      this.clearMarkers();
-
-      const validStories = stories.filter(
-        (story) =>
-          story.lat &&
-          story.lon &&
-          !isNaN(parseFloat(story.lat)) &&
-          !isNaN(parseFloat(story.lon))
-      );
-
-      console.log(`Menambahkan ${validStories.length} markers ke map`);
-
-      validStories.forEach((story, index) => {
-        try {
-          const lat = parseFloat(story.lat);
-          const lon = parseFloat(story.lon);
-
-          const customIcon = L.divIcon({
-            className: "custom-marker",
-            html: `<div class="marker-pin">
-                     <i class="fas fa-map-marker-alt"></i>
-                   </div>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 30],
-          });
-
-          const marker = L.marker([lat, lon], { icon: customIcon }).addTo(
-            this.map
-          );
-
-          marker.bindPopup(
-            `
-            <div class="popup-content">
-              <img src="${story.photoUrl}" alt="Story by ${
-              story.name
-            }" class="popup-image">
-              <div class="popup-info">
-                <h4 class="popup-author">
-                  <i class="fas fa-user-circle"></i>
-                  ${story.name}
-                </h4>
-                <p class="popup-description">${story.description}</p>
-                <small class="popup-date">
-                  <i class="fas fa-calendar-alt"></i>
-                  ${showFormattedDate(story.createdAt, "id-ID")}
-                </small>
-              </div>
-            </div>
-          `,
-            {
-              maxWidth: 300,
-              className: "custom-popup",
-            }
-          );
-
-          this.markers.push(marker);
-        } catch (markerError) {
-          console.warn(`Error adding marker ${index}:`, markerError);
-        }
-      });
-
-      if (this.markers.length > 0) {
-        try {
-          const group = new L.featureGroup(this.markers);
-          this.map.fitBounds(group.getBounds().pad(0.1));
-        } catch (boundsError) {
-          console.warn("Error fitting bounds:", boundsError);
-        }
-      }
-    } catch (error) {
-      console.error("Error adding markers:", error);
-    }
-  }
-
-  toggleMapFullscreen() {
-    const mapSection = document.querySelector(".map-section");
+  toggleFullscreen() {
+    const container = document.querySelector(".stories-map-container");
     const btn = document.getElementById("fullscreen-map");
     const icon = btn.querySelector("i");
 
-    if (mapSection.classList.contains("fullscreen")) {
-      mapSection.classList.remove("fullscreen");
+    if (container.classList.contains("fullscreen")) {
+      container.classList.remove("fullscreen");
       icon.className = "fas fa-expand";
-      btn.title = "Layar penuh";
+      document.body.style.overflow = "";
     } else {
-      mapSection.classList.add("fullscreen");
+      container.classList.add("fullscreen");
       icon.className = "fas fa-compress";
-      btn.title = "Keluar dari layar penuh";
+      document.body.style.overflow = "hidden";
     }
 
     setTimeout(() => {
-      if (this.map) {
-        this.map.invalidateSize();
-      }
+      if (this.map) this.map.invalidateSize();
     }, 300);
   }
 
-  resetMapContainer() {
-    const mapContainer = document.getElementById("map-container");
-    if (!mapContainer) return;
+  applyFilter(filter) {
+    const cards = document.querySelectorAll(".story-card");
+    let visibleCount = 0;
 
-    delete mapContainer._leaflet_id;
-    mapContainer.innerHTML = "";
+    cards.forEach((card) => {
+      const hasLocation = card.classList.contains("has-location");
+      const shouldShow =
+        filter === "all" || (filter === "location" && hasLocation);
 
-    const leafletClasses = [
-      "leaflet-container",
-      "leaflet-touch",
-      "leaflet-retina",
-      "leaflet-fade-anim",
-      "leaflet-grab",
-      "leaflet-touch-zoom",
-      "leaflet-touch-drag",
-      "leaflet-safari",
-    ];
-
-    leafletClasses.forEach((cls) => {
-      mapContainer.classList.remove(cls);
-    });
-
-    mapContainer.style.position = "";
-    mapContainer.removeAttribute("tabindex");
-  }
-
-  clearMarkers() {
-    this.markers.forEach((marker) => {
-      try {
-        if (this.map && marker) {
-          this.map.removeLayer(marker);
-        }
-      } catch (error) {
-        // Ignore cleanup errors
+      if (shouldShow) {
+        card.style.display = "block";
+        visibleCount++;
+      } else {
+        card.style.display = "none";
       }
     });
-    this.markers = [];
+
+    this.updateMapInfo(visibleCount);
   }
 
-  forceCleanupMap() {
-    console.log("Force cleanup map...");
+  updateStats(stories) {
+    const totalCount = document.getElementById("total-count");
+    const locationCount = document.getElementById("location-count");
 
-    if (this.mapInitTimeout) {
-      clearTimeout(this.mapInitTimeout);
-      this.mapInitTimeout = null;
+    if (totalCount) {
+      this.animateNumber(totalCount, stories.length);
     }
 
-    this.clearMarkers();
+    if (locationCount) {
+      const withLocation = stories.filter((s) => s.lat && s.lon).length;
+      this.animateNumber(locationCount, withLocation);
+    }
+  }
 
-    if (this.map) {
-      try {
-        this.map.off();
-        this.map.remove();
-      } catch (error) {
-        console.warn("Error force removing map:", error);
+  animateNumber(element, target) {
+    let current = 0;
+    const increment = target / 20;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        element.textContent = target;
+        clearInterval(timer);
+      } else {
+        element.textContent = Math.floor(current);
       }
-      this.map = null;
-    }
-
-    this.resetMapContainer();
-    this.mapInitialized = false;
-    this.mapInitializationInProgress = false;
+    }, 50);
   }
 
-  showMapError() {
-    const mapContainer = document.getElementById("map-container");
-    if (mapContainer) {
-      mapContainer.innerHTML = `
-        <div class="map-error">
-          <i class="fas fa-exclamation-triangle"></i>
-          <h3>Map tidak dapat dimuat</h3>
-          <p>Terjadi kesalahan saat memuat peta</p>
-          <button onclick="window.location.reload()" class="retry-btn">
-            <i class="fas fa-redo"></i>
-            Coba Lagi
-          </button>
-        </div>
+  updateMapInfo(count) {
+    const mapInfo = document.getElementById("map-info");
+    if (mapInfo) {
+      mapInfo.innerHTML = `
+        <i class="fas fa-info-circle"></i>
+        <span>Menampilkan ${count} stories</span>
       `;
     }
+  }
+
+  getRelativeTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) return "Baru saja";
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} menit lalu`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} jam lalu`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} hari lalu`;
+
+    return showFormattedDate(dateString);
   }
 
   showLoading() {
     const container = document.getElementById("stories-container");
     if (container) {
       container.innerHTML = `
-        <div class="loading-container" role="status" aria-live="polite">
-          <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-          </div>
+        <div class="loading-state">
+          <div class="loading-spinner"></div>
           <p>Memuat stories...</p>
         </div>
       `;
@@ -784,11 +677,11 @@ export class StoriesView {
     const container = document.getElementById("stories-container");
     if (container) {
       container.innerHTML = `
-        <div class="error-container" role="alert">
-          <i class="fas fa-exclamation-circle"></i>
+        <div class="error-state">
+          <i class="fas fa-exclamation-triangle"></i>
           <h3>Terjadi Kesalahan</h3>
           <p>${message}</p>
-          <button id="retry-button" class="retry-button btn btn-primary">
+          <button class="btn-retry" onclick="window.location.reload()">
             <i class="fas fa-redo"></i>
             Coba Lagi
           </button>
@@ -797,25 +690,65 @@ export class StoriesView {
     }
   }
 
-  showEmpty() {
+  showEmptyState() {
     const container = document.getElementById("stories-container");
     if (container) {
       container.innerHTML = `
-        <div class="empty-container">
+        <div class="empty-state">
           <i class="fas fa-images"></i>
           <h3>Belum Ada Stories</h3>
-          <p>Jadilah yang pertama membagikan story!</p>
-          <a href="#/add" class="add-story-button btn btn-primary">
+          <p>Jadilah yang pertama berbagi cerita!</p>
+          <a href="#/add" class="btn-add-first">
             <i class="fas fa-plus"></i>
-            Tambah Story
+            Buat Story Pertama
           </a>
         </div>
       `;
     }
   }
 
+  showMapError() {
+    const mapContainer = document.getElementById("stories-map");
+    if (mapContainer) {
+      mapContainer.innerHTML = `
+        <div class="map-error">
+          <i class="fas fa-map"></i>
+          <p>Peta tidak dapat dimuat</p>
+        </div>
+      `;
+    }
+  }
+
+  clearMarkers() {
+    this.markers.forEach((marker) => {
+      if (this.map) this.map.removeLayer(marker);
+    });
+    this.markers = [];
+  }
+
+  closeAnyModal() {
+    const modal = document.querySelector(".story-modal");
+    if (modal) {
+      modal.querySelector(".modal-close").click();
+    }
+  }
+
+  announceToScreenReader(message) {
+    const announcement = document.createElement("div");
+    announcement.setAttribute("aria-live", "polite");
+    announcement.className = "sr-only";
+    announcement.textContent = message;
+    document.body.appendChild(announcement);
+    setTimeout(() => document.body.removeChild(announcement), 1000);
+  }
+
   destroy() {
-    console.log("Destroying StoriesView");
-    this.forceCleanupMap();
+    this.clearMarkers();
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+    this.storiesData = [];
+    this.isMapReady = false;
   }
 }

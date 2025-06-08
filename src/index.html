@@ -46,6 +46,7 @@
     ></script>
 
     <link rel="stylesheet" href="/styles/styles.css" />
+    <link rel="stylesheet" href="/styles/stories-page-style.css" />
     <link rel="stylesheet" href="/styles/auth-page-style.css" />
     <link rel="stylesheet" href="/styles/add-story-style.css" />
     <link rel="stylesheet" href="/styles/about-page-style.css" />
@@ -131,28 +132,14 @@
       if ("startViewTransition" in document) {
         window.addEventListener("hashchange", (event) => {
           if (!event.detail?.skipTransition) {
-            document.startViewTransition(() => {
-              // Transition akan ditangani oleh event listener di app.js
-            });
+            document.startViewTransition(() => {});
           }
         });
       }
-
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((registration) => {
-              console.log("SW registered: ", registration);
-            })
-            .catch((registrationError) => {
-              console.log("SW registration failed: ", registrationError);
-            });
-        });
-      }
-
       window.showToast = function (message, type = "info", duration = 3000) {
         const container = document.getElementById("toast-container");
+        if (!container) return;
+
         const toast = document.createElement("div");
         toast.className = `toast toast-${type}`;
 
@@ -173,23 +160,23 @@
 
         container.appendChild(toast);
 
-        setTimeout(() => {
-          toast.classList.add("toast-fade-out");
-          setTimeout(() => {
-            if (container.contains(toast)) {
-              container.removeChild(toast);
-            }
-          }, 300);
-        }, duration);
+        const closeBtn = toast.querySelector(".toast-close");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", () => {
+            removeToast();
+          });
+        }
 
-        toast.querySelector(".toast-close").addEventListener("click", () => {
+        function removeToast() {
           toast.classList.add("toast-fade-out");
           setTimeout(() => {
             if (container.contains(toast)) {
               container.removeChild(toast);
             }
           }, 300);
-        });
+        }
+
+        setTimeout(removeToast, duration);
       };
     </script>
 

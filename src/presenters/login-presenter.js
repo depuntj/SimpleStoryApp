@@ -22,7 +22,6 @@ export class LoginPresenter {
       await this.handleRegister();
     });
 
-    // Handle keyboard navigation
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         this.view.clearMessages();
@@ -45,13 +44,12 @@ export class LoginPresenter {
 
       this.view.showSuccess("Login berhasil! Mengalihkan ke halaman utama...");
 
-      // Redirect to home page after successful login
       setTimeout(() => {
         window.location.hash = "#/";
       }, 1500);
     } catch (error) {
       console.error("Login error:", error);
-      this.view.showError(this.getErrorMessage(error.message));
+      this.view.showError(error.message || "Terjadi kesalahan saat login");
     } finally {
       this.view.hideLoading(true);
     }
@@ -79,32 +77,14 @@ export class LoginPresenter {
       );
       this.view.clearForms();
 
-      // Switch to login tab after successful registration
       setTimeout(() => {
         this.view.switchToTab("login");
       }, 2000);
     } catch (error) {
       console.error("Register error:", error);
-      this.view.showError(this.getErrorMessage(error.message));
+      this.view.showError(error.message || "Terjadi kesalahan saat registrasi");
     } finally {
       this.view.hideLoading(false);
     }
-  }
-
-  getErrorMessage(errorMessage) {
-    const errorMap = {
-      LOGIN_FAILED: "Email atau password salah",
-      REGISTER_FAILED: "Gagal mendaftar. Email mungkin sudah terdaftar",
-      "Bad Request": "Data yang dikirim tidak valid",
-      "Internal Server Error": "Terjadi kesalahan server. Silakan coba lagi",
-      "Failed to fetch":
-        "Tidak dapat terhubung ke server. Periksa koneksi internet.",
-    };
-
-    return (
-      errorMap[errorMessage] ||
-      errorMessage ||
-      "Terjadi kesalahan yang tidak diketahui"
-    );
   }
 }

@@ -1,146 +1,217 @@
-// src/models/story-model.js
 import CONFIG from "../scripts/config.js";
+import {
+  getAllStories,
+  getStoryDetail,
+  addStory,
+  addStoryAsGuest,
+} from "../scripts/data/api.js";
 import authService from "../services/auth-service.js";
 
 export class StoryModel {
-  async getAllStories() {
-    const headers = {};
+  constructor() {
+    this.stories = [];
+    this.currentStory = null;
+  }
 
-    // PERBAIKAN: Coba dengan auth header jika tersedia, tapi jangan gagal jika tidak ada
-    if (authService.isLoggedIn()) {
-      headers["Authorization"] = `Bearer ${authService.getToken()}`;
-    }
-
+  async getAllStories(options = {}) {
     try {
-      const response = await fetch(`${CONFIG.BASE_URL}/stories?location=1`, {
-        method: "GET",
-        headers: headers,
-      });
+      const defaultOptions = {
+        location: 1,
+        page: 1,
+        size: 20,
+        ...options,
+      };
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Token expired, logout dan coba lagi tanpa auth
-          authService.logout();
+      let requestOptions = { ...defaultOptions };
 
-          // PERBAIKAN: Coba sekali lagi tanpa authorization header
-          const retryResponse = await fetch(
-            `${CONFIG.BASE_URL}/stories?location=1`,
-            {
-              method: "GET",
-              headers: {},
-            }
-          );
+      if (authService.isLoggedIn()) {
+        requestOptions.token = authService.getToken();
+      }
 
-          if (!retryResponse.ok) {
-            throw new Error("STORIES_FAILED_TO_GET");
-          }
+      const response = await getAllStories(requestOptions);
 
-          const retryData = await retryResponse.json();
-          return retryData.listStory || [];
-        }
+      if (response.error === false && response.listStory) {
+        this.stories = response.listStory;
+        return this.stories;
+      } else {
         throw new Error("STORIES_FAILED_TO_GET");
       }
-
-      const data = await response.json();
-      return data.listStory || [];
     } catch (error) {
-      console.error("Error in getAllStories:", error);
-
-      // PERBAIKAN: Jika fetch gagal, coba dengan guest mode
-      if (error.name === "TypeError" && error.message.includes("fetch")) {
-        console.log("Mencoba guest mode...");
-        try {
-          const guestResponse = await fetch(
-            `${CONFIG.BASE_URL}/stories?location=1`,
-            {
-              method: "GET",
-              headers: {},
-            }
-          );
-
-          if (guestResponse.ok) {
-            const guestData = await guestResponse.json();
-            return guestData.listStory || [];
-          }
-        } catch (guestError) {
-          console.error("Guest mode juga gagal:", guestError);
+      if (
+        error.message.includes("401") ||
+        error.message.includes("unauthorized")
+      ) {
+        if (authService.isLoggedIn()) {
+          authService.logout();
+          throw new Error("SESSION_EXPIRED");
         }
       }
 
-      throw error;
+      if (error.message.includes("fetch") || error.name === "TypeError") {
+        throw new Error("NETWORK_ERROR");
+      }
+
+      throw new Error(error.message || "STORIES_FAILED_TO_GET");
     }
   }
 
   async getStoryDetail(id) {
-    const headers = {};
+    try {
+      const token = authService.getToken();
+      const response = await getStoryDetail(id, token);
 
-    if (authService.isLoggedIn()) {
-      headers["Authorization"] = `Bearer ${authService.getToken()}`;
-    }
-
-    const response = await fetch(`${CONFIG.BASE_URL}/stories/${id}`, {
-      method: "GET",
-      headers: headers,
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
+      if (response.error === false && response.story) {
+        this.currentStory = response.story;
+        return this.currentStory;
+      } else {
+        throw new Error("STORY_DETAIL_FAILED_TO_GET");
+      }
+    } catch (error) {
+      if (error.message.includes("401")) {
         authService.logout();
         throw new Error("SESSION_EXPIRED");
       }
-      throw new Error("STORY_DETAIL_FAILED_TO_GET");
+      throw new Error(error.message || "STORY_DETAIL_FAILED_TO_GET");
     }
-
-    const data = await response.json();
-    return data.story;
   }
 
   async addStory(description, photo, lat = null, lon = null) {
-    if (!authService.isLoggedIn()) {
-      throw new Error("AUTHENTICATION_REQUIRED");
-    }
+    try {
+      if (!authService.isLoggedIn()) {
+        throw new Error("AUTHENTICATION_REQUIRED");
+      }
 
-    const formData = new FormData();
-    formData.append("description", description);
-    formData.append("photo", photo);
-    if (lat !== null) formData.append("lat", lat);
-    if (lon !== null) formData.append("lon", lon);
+      if (
+        !description ||
+        description.length < CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH
+      ) {
+        throw new Error("DESCRIPTION_TOO_SHORT");
+      }
 
-    const response = await fetch(`${CONFIG.BASE_URL}/stories`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authService.getToken()}`,
-      },
-      body: formData,
-    });
+      if (!photo) {
+        throw new Error("PHOTO_REQUIRED");
+      }
 
-    if (!response.ok) {
-      if (response.status === 401) {
+      if (photo.size > CONFIG.VALIDATION.MAX_FILE_SIZE) {
+        throw new Error("FILE_TOO_LARGE");
+      }
+
+      if (!CONFIG.VALIDATION.ALLOWED_IMAGE_TYPES.includes(photo.type)) {
+        throw new Error("INVALID_FILE_TYPE");
+      }
+
+      const formData = new FormData();
+      formData.append("description", description);
+      formData.append("photo", photo);
+      if (lat !== null && lon !== null) {
+        formData.append("lat", lat);
+        formData.append("lon", lon);
+      }
+
+      const token = authService.getToken();
+      const response = await addStory(formData, token);
+
+      if (response.error === false) {
+        return response;
+      } else {
+        throw new Error("STORY_FAILED_TO_ADD");
+      }
+    } catch (error) {
+      if (error.message.includes("401")) {
         authService.logout();
         throw new Error("SESSION_EXPIRED");
       }
-      throw new Error("STORY_FAILED_TO_ADD");
-    }
 
-    return await response.json();
+      const errorMap = {
+        DESCRIPTION_TOO_SHORT: `Deskripsi harus minimal ${CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH} karakter`,
+        PHOTO_REQUIRED: "Foto harus diambil terlebih dahulu",
+        FILE_TOO_LARGE: CONFIG.ERROR_MESSAGES.FILE_TOO_LARGE,
+        INVALID_FILE_TYPE: CONFIG.ERROR_MESSAGES.INVALID_FILE_TYPE,
+        AUTHENTICATION_REQUIRED: "Silakan login terlebih dahulu",
+        SESSION_EXPIRED: CONFIG.ERROR_MESSAGES.AUTH_EXPIRED,
+      };
+
+      throw new Error(
+        errorMap[error.message] || error.message || "Gagal menambahkan story"
+      );
+    }
   }
 
   async addStoryAsGuest(description, photo, lat = null, lon = null) {
-    const formData = new FormData();
-    formData.append("description", description);
-    formData.append("photo", photo);
-    if (lat !== null) formData.append("lat", lat);
-    if (lon !== null) formData.append("lon", lon);
+    try {
+      if (
+        !description ||
+        description.length < CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH
+      ) {
+        throw new Error("DESCRIPTION_TOO_SHORT");
+      }
 
-    const response = await fetch(`${CONFIG.BASE_URL}/stories/guest`, {
-      method: "POST",
-      body: formData,
-    });
+      if (!photo) {
+        throw new Error("PHOTO_REQUIRED");
+      }
 
-    if (!response.ok) {
-      throw new Error("STORY_FAILED_TO_ADD");
+      if (photo.size > CONFIG.VALIDATION.MAX_FILE_SIZE) {
+        throw new Error("FILE_TOO_LARGE");
+      }
+
+      if (!CONFIG.VALIDATION.ALLOWED_IMAGE_TYPES.includes(photo.type)) {
+        throw new Error("INVALID_FILE_TYPE");
+      }
+
+      const formData = new FormData();
+      formData.append("description", description);
+      formData.append("photo", photo);
+      if (lat !== null && lon !== null) {
+        formData.append("lat", lat);
+        formData.append("lon", lon);
+      }
+
+      const response = await addStoryAsGuest(formData);
+
+      if (response.error === false) {
+        return response;
+      } else {
+        throw new Error("STORY_FAILED_TO_ADD");
+      }
+    } catch (error) {
+      const errorMap = {
+        DESCRIPTION_TOO_SHORT: `Deskripsi harus minimal ${CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH} karakter`,
+        PHOTO_REQUIRED: "Foto harus diambil terlebih dahulu",
+        FILE_TOO_LARGE: CONFIG.ERROR_MESSAGES.FILE_TOO_LARGE,
+        INVALID_FILE_TYPE: CONFIG.ERROR_MESSAGES.INVALID_FILE_TYPE,
+      };
+
+      throw new Error(
+        errorMap[error.message] || error.message || "Gagal menambahkan story"
+      );
     }
+  }
 
-    return await response.json();
+  getStoriesWithLocation() {
+    return this.stories.filter((story) => story.lat && story.lon);
+  }
+
+  getStoriesCount() {
+    return this.stories.length;
+  }
+
+  getUniqueAuthorsCount() {
+    const uniqueAuthors = new Set(this.stories.map((story) => story.name));
+    return uniqueAuthors.size;
+  }
+
+  getStoriesWithLocationCount() {
+    return this.getStoriesWithLocation().length;
+  }
+
+  searchStories(query) {
+    if (!query) return this.stories;
+
+    const lowercaseQuery = query.toLowerCase();
+    return this.stories.filter(
+      (story) =>
+        story.name.toLowerCase().includes(lowercaseQuery) ||
+        story.description.toLowerCase().includes(lowercaseQuery)
+    );
   }
 }

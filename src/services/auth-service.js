@@ -1,44 +1,60 @@
-// src/services/auth-service.js
 import { AuthModel } from "../models/auth-model.js";
+import CONFIG from "../scripts/config.js";
 
 class AuthService {
   constructor() {
     this.authModel = new AuthModel();
-    this.listeners = [];
+    this.listeners = new Set();
+    this.isInitialized = false;
 
-    // PERBAIKAN: Load auth state saat initialization
     this.loadAuthState();
   }
 
   subscribe(callback) {
-    this.listeners.push(callback);
+    this.listeners.add(callback);
     return () => {
-      this.listeners = this.listeners.filter(
-        (listener) => listener !== callback
-      );
+      this.listeners.delete(callback);
     };
   }
 
   notifyListeners() {
-    this.listeners.forEach((callback) => callback(this.isLoggedIn()));
+    this.listeners.forEach((callback) => {
+      try {
+        callback(this.isLoggedIn(), this.getCurrentUser());
+      } catch (error) {
+        console.warn("Error in auth listener:", error);
+      }
+    });
   }
 
   async login(email, password) {
-    const result = await this.authModel.login(email, password);
-    this.saveAuthState();
-    this.notifyListeners();
-    return result;
+    try {
+      const result = await this.authModel.login(email, password);
+      this.saveAuthState();
+      this.notifyListeners();
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   async register(name, email, password) {
-    return await this.authModel.register(name, email, password);
+    try {
+      const result = await this.authModel.register(name, email, password);
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
   logout() {
     this.authModel.logout();
     this.clearAuthState();
     this.notifyListeners();
-    window.location.hash = "#/login";
+
+    setTimeout(() => {
+      window.location.hash = "#/login";
+    }, 100);
   }
 
   isLoggedIn() {
@@ -54,35 +70,45 @@ class AuthService {
   }
 
   saveAuthState() {
-    if (this.authModel.currentUser && this.authModel.token) {
-      localStorage.setItem(
-        "dicoding_stories_user",
-        JSON.stringify(this.authModel.currentUser)
-      );
-      localStorage.setItem("dicoding_stories_token", this.authModel.token);
+    try {
+      const user = this.authModel.getCurrentUser();
+      const token = this.authModel.getToken();
+
+      if (user && token) {
+        localStorage.setItem(
+          CONFIG.STORAGE_KEYS.USER_DATA,
+          JSON.stringify(user)
+        );
+        localStorage.setItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN, token);
+      }
+    } catch (error) {
+      console.warn("Failed to save auth state:", error);
     }
   }
 
-  // PERBAIKAN: Buat loadAuthState synchronous dan lebih robust
   loadAuthState() {
     try {
-      const savedUser = localStorage.getItem("dicoding_stories_user");
-      const savedToken = localStorage.getItem("dicoding_stories_token");
+      const savedUser = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
+      const savedToken = localStorage.getItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
 
       if (savedUser && savedToken) {
-        this.authModel.currentUser = JSON.parse(savedUser);
-        this.authModel.token = savedToken;
-        console.log("Auth state berhasil dimuat");
+        const user = JSON.parse(savedUser);
+        this.authModel.setAuthData(user, savedToken);
+        this.isInitialized = true;
       }
     } catch (error) {
-      console.error("Error loading auth state:", error);
+      console.warn("Failed to load auth state:", error);
       this.clearAuthState();
     }
   }
 
   clearAuthState() {
-    localStorage.removeItem("dicoding_stories_user");
-    localStorage.removeItem("dicoding_stories_token");
+    try {
+      localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
+      localStorage.removeItem(CONFIG.STORAGE_KEYS.AUTH_TOKEN);
+    } catch (error) {
+      console.warn("Failed to clear auth state:", error);
+    }
   }
 
   requireAuth() {
@@ -91,6 +117,42 @@ class AuthService {
       return false;
     }
     return true;
+  }
+
+  validateSession() {
+    const token = this.getToken();
+    if (!token) {
+      this.logout();
+      return false;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const now = Date.now() / 1000;
+
+      if (payload.exp && payload.exp < now) {
+        this.logout();
+        return false;
+      }
+    } catch (error) {
+      console.warn("Invalid token format:", error);
+      this.logout();
+      return false;
+    }
+
+    return true;
+  }
+
+  async refreshUserData() {
+    if (!this.isLoggedIn()) return false;
+
+    try {
+      return true;
+    } catch (error) {
+      console.warn("Failed to refresh user data:", error);
+      this.logout();
+      return false;
+    }
   }
 }
 
