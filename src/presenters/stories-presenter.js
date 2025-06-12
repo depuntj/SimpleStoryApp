@@ -6,16 +6,33 @@ export class StoriesPresenter {
     this.view = view;
     this.retryAttempts = 0;
     this.maxRetryAttempts = 3;
+    this.currentStories = [];
+    this.currentFilter = "all";
+    this.currentViewMode = "grid";
   }
 
   setupEventHandlers() {
-    this.setupRetryHandler();
-    this.setupRefreshHandler();
+    this.view.onRetryRequested(() => this.handleRetry());
+    this.view.onRefreshRequested(() => this.handleRefresh());
+    this.view.onStoryDetailRequested((storyId) =>
+      this.handleStoryDetail(storyId)
+    );
+    this.view.onLocationFocusRequested((storyId) =>
+      this.handleLocationFocus(storyId)
+    );
+    this.view.onStoryLiked((storyId) => this.handleStoryLike(storyId));
+    this.view.onStoryShared((storyId) => this.handleStoryShare(storyId));
+    this.view.onFilterChanged((filter) => this.handleFilterChange(filter));
+    this.view.onViewModeChanged((viewMode) =>
+      this.handleViewModeChange(viewMode)
+    );
+    this.view.onMapCenterRequested(() => this.handleMapCenter());
+    this.view.onMapFullscreenToggled(() => this.handleMapFullscreen());
   }
 
   async loadStories() {
     try {
-      this.view.showLoading();
+      this.view.showLoadingState();
       this.retryAttempts = 0;
 
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -29,11 +46,11 @@ export class StoriesPresenter {
       });
 
       const validatedStories = this.validateAndSanitizeStories(rawStories);
+      this.currentStories = validatedStories;
 
       console.log("✅ Validated stories:", {
         original: rawStories?.length || 0,
         validated: validatedStories.length,
-        sampleValidated: validatedStories[0] || null,
       });
 
       if (!validatedStories || validatedStories.length === 0) {
@@ -41,12 +58,22 @@ export class StoriesPresenter {
         this.view.showEmptyState();
       } else {
         console.log("🎉 Rendering stories to view");
-        this.view.renderStoriesList(validatedStories);
+        this.displayStories();
       }
     } catch (error) {
       console.error("❌ Error loading stories:", error);
       this.handleLoadError(error);
     }
+  }
+
+  displayStories() {
+    const filteredStories = this.applyCurrentFilter(this.currentStories);
+    const storiesWithLocation = this.getStoriesWithLocation(filteredStories);
+    const stats = this.calculateStats(filteredStories);
+
+    this.view.renderStoriesList(filteredStories);
+    this.view.addMarkersToMap(storiesWithLocation);
+    this.view.updateStats(stats);
   }
 
   validateAndSanitizeStories(stories) {
@@ -62,15 +89,6 @@ export class StoriesPresenter {
     }
 
     const validStories = stories
-      .map((story, index) => {
-        console.log(`🔍 Validating story ${index + 1}:`, {
-          id: story?.id,
-          name: story?.name,
-          hasDescription: !!story?.description,
-          hasPhoto: !!story?.photoUrl,
-        });
-        return story;
-      })
       .filter((story) => this.isValidStory(story))
       .map((story) => this.sanitizeStory(story));
 
@@ -100,11 +118,6 @@ export class StoriesPresenter {
       return false;
     }
 
-    if (typeof story.id !== "string" || story.id.trim() === "") {
-      console.warn("❌ Invalid story ID:", story.id);
-      return false;
-    }
-
     return true;
   }
 
@@ -123,7 +136,6 @@ export class StoriesPresenter {
       sanitized.lat !== null &&
       (isNaN(sanitized.lat) || sanitized.lat < -90 || sanitized.lat > 90)
     ) {
-      console.warn("❌ Invalid latitude, removing location:", sanitized.lat);
       sanitized.lat = null;
       sanitized.lon = null;
     }
@@ -132,34 +144,21 @@ export class StoriesPresenter {
       sanitized.lon !== null &&
       (isNaN(sanitized.lon) || sanitized.lon < -180 || sanitized.lon > 180)
     ) {
-      console.warn("❌ Invalid longitude, removing location:", sanitized.lon);
       sanitized.lat = null;
       sanitized.lon = null;
     }
-
-    console.log("✅ Sanitized story:", {
-      id: sanitized.id,
-      name: sanitized.name,
-      hasDescription: !!sanitized.description,
-      hasLocation: !!(sanitized.lat && sanitized.lon),
-    });
 
     return sanitized;
   }
 
   sanitizeName(name) {
     if (!name || typeof name !== "string" || name.trim() === "") {
-      console.log("⚠️ Using fallback name for empty/invalid name:", name);
       return "Anonymous User";
     }
-
-    const sanitized = name
-      .trim()
-      .replace(/\s+/g, " ")
-      .replace(/[<>]/g, "")
-      .substring(0, 100);
-
-    return sanitized || "Anonymous User";
+    return (
+      name.trim().replace(/\s+/g, " ").replace(/[<>]/g, "").substring(0, 100) ||
+      "Anonymous User"
+    );
   }
 
   sanitizeDescription(description) {
@@ -170,12 +169,135 @@ export class StoriesPresenter {
     ) {
       return "Tidak ada deskripsi tersedia.";
     }
-
     return description
       .trim()
       .replace(/\s+/g, " ")
       .replace(/[<>]/g, "")
       .substring(0, 1000);
+  }
+
+  applyCurrentFilter(stories) {
+    switch (this.currentFilter) {
+      case "location":
+        return stories.filter((story) => story.lat && story.lon);
+      case "all":
+      default:
+        return stories;
+    }
+  }
+
+  getStoriesWithLocation(stories) {
+    return stories.filter((story) => story.lat && story.lon);
+  }
+
+  calculateStats(stories) {
+    return {
+      total: stories.length,
+      withLocation: this.getStoriesWithLocation(stories).length,
+      uniqueAuthors: new Set(stories.map((story) => story.name)).size,
+    };
+  }
+
+  async handleRetry() {
+    if (this.retryAttempts < this.maxRetryAttempts) {
+      this.retryAttempts++;
+      console.log(
+        `🔄 Retrying to load stories (attempt ${this.retryAttempts})`
+      );
+      await this.loadStories();
+    } else {
+      this.view.showErrorState(
+        "Gagal memuat stories setelah beberapa percobaan. Silakan refresh halaman."
+      );
+    }
+  }
+
+  async handleRefresh() {
+    await this.loadStories();
+  }
+
+  handleStoryDetail(storyId) {
+    console.log("📖 Opening story detail:", storyId);
+    const story = this.currentStories.find((s) => s.id === storyId);
+    if (story) {
+      this.view.showStoryModal(story);
+    }
+  }
+
+  handleLocationFocus(storyId) {
+    console.log("📍 Focusing on story location:", storyId);
+    const story = this.currentStories.find((s) => s.id === storyId);
+    if (story && story.lat && story.lon) {
+      this.view.focusMapOnLocation(story.lat, story.lon, story);
+    }
+  }
+
+  handleStoryLike(storyId) {
+    console.log("❤️ Story liked:", storyId);
+    this.saveLikeStatus(storyId, true);
+  }
+
+  handleStoryShare(storyId) {
+    console.log("📤 Story shared:", storyId);
+    const story = this.currentStories.find((s) => s.id === storyId);
+    if (story) {
+      this.shareStory(story);
+    }
+  }
+
+  handleFilterChange(filter) {
+    console.log("🔍 Filter changed to:", filter);
+    this.currentFilter = filter;
+    this.displayStories();
+  }
+
+  handleViewModeChange(viewMode) {
+    console.log("👁️ View mode changed to:", viewMode);
+    this.currentViewMode = viewMode;
+  }
+
+  handleMapCenter() {
+    console.log("🎯 Centering map");
+  }
+
+  handleMapFullscreen() {
+    console.log("📺 Toggling map fullscreen");
+  }
+
+  saveLikeStatus(storyId, isLiked) {
+    try {
+      const likes = JSON.parse(localStorage.getItem("story_likes") || "{}");
+      likes[storyId] = isLiked;
+      localStorage.setItem("story_likes", JSON.stringify(likes));
+    } catch (error) {
+      console.warn("Could not save like status:", error);
+    }
+  }
+
+  shareStory(story) {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `Story dari ${story.name}`,
+          text: story.description,
+          url: window.location.href,
+        })
+        .catch(console.error);
+    } else {
+      const shareText = `Story dari ${story.name}: ${story.description}\n${window.location.href}`;
+      navigator.clipboard
+        .writeText(shareText)
+        .then(() => {
+          if (typeof window.showToast === "function") {
+            window.showToast("Link berhasil disalin!", "success");
+          }
+        })
+        .catch(() => {
+          if (typeof window.showToast === "function") {
+            window.showToast("Gagal membagikan story", "error");
+          }
+        });
+    }
   }
 
   handleLoadError(error) {
@@ -210,79 +332,6 @@ export class StoriesPresenter {
         break;
     }
 
-    this.view.showError(errorMessage);
-  }
-
-  async retryLoadStories() {
-    if (this.retryAttempts < this.maxRetryAttempts) {
-      this.retryAttempts++;
-      console.log(
-        `🔄 Retrying to load stories (attempt ${this.retryAttempts})`
-      );
-      await this.loadStories();
-    } else {
-      this.view.showError(
-        "Gagal memuat stories setelah beberapa percobaan. Silakan refresh halaman."
-      );
-    }
-  }
-
-  setupRetryHandler() {
-    document.addEventListener("click", (event) => {
-      if (
-        event.target &&
-        (event.target.classList.contains("btn-retry") ||
-          event.target.closest(".btn-retry"))
-      ) {
-        event.preventDefault();
-        this.retryLoadStories();
-      }
-    });
-  }
-
-  setupRefreshHandler() {
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "F5" || (event.ctrlKey && event.key === "r")) {
-        event.preventDefault();
-        this.loadStories();
-      }
-    });
-  }
-
-  async refreshStories() {
-    try {
-      const rawStories = await this.model.getAllStories();
-      const validatedStories = this.validateAndSanitizeStories(rawStories);
-
-      this.view.renderStoriesList(validatedStories);
-
-      if (typeof window.showToast === "function") {
-        window.showToast("Stories berhasil diperbarui", "success");
-      }
-    } catch (error) {
-      console.error("Error refreshing stories:", error);
-      if (typeof window.showToast === "function") {
-        window.showToast("Gagal memperbarui stories", "error");
-      }
-    }
-  }
-
-  async searchStories(query) {
-    try {
-      const stories = this.model.searchStories(query);
-      const validatedStories = this.validateAndSanitizeStories(stories);
-      this.view.renderStoriesList(validatedStories);
-    } catch (error) {
-      console.error("Error searching stories:", error);
-      this.view.showError("Gagal mencari stories");
-    }
-  }
-
-  getStoriesStats() {
-    return {
-      total: this.model.getStoriesCount(),
-      withLocation: this.model.getStoriesWithLocationCount(),
-      uniqueAuthors: this.model.getUniqueAuthorsCount(),
-    };
+    this.view.showErrorState(errorMessage);
   }
 }

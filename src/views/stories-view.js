@@ -343,95 +343,128 @@ export class StoriesView {
         ? storyDescription.substring(0, 120) + "..."
         : storyDescription;
 
+    const imageAltText = `Foto story oleh ${storyName}. ${storyDescription.substring(
+      0,
+      100
+    )}${storyDescription.length > 100 ? "..." : ""}`;
+
     return `
       <article class="story-card ${hasLocation ? "has-location" : ""}" 
                data-story-id="${story.id}"
                tabindex="0"
                role="article"
-               aria-labelledby="story-author-${index}"
-               aria-describedby="story-desc-${index}">
+               aria-labelledby="story-title-${index}"
+               aria-describedby="story-desc-${index} story-meta-${index}">
         
-        <div class="story-image">
+        <header class="story-image" role="img" aria-label="Gambar story">
           <img src="${photoUrl}" 
-               alt="Foto story dari ${storyName}: ${storyDescription.substring(
-      0,
-      50
-    )}..." 
+               alt="${imageAltText}" 
                loading="lazy"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div class="image-placeholder" style="display: none;">
-            <i class="fas fa-image"></i>
+               role="img"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.nextElementSibling.setAttribute('role', 'img'); this.nextElementSibling.setAttribute('aria-label', 'Gambar tidak tersedia untuk story ${storyName}');">
+          <div class="image-placeholder" 
+               style="display: none;"
+               role="img"
+               aria-label="Gambar tidak tersedia">
+            <i class="fas fa-image" aria-hidden="true"></i>
             <span>Gambar tidak tersedia</span>
           </div>
           
-          <div class="story-overlay">
-            <button class="story-action view-btn" aria-label="Lihat detail story" data-action="view">
-              <i class="fas fa-eye"></i>
+          <div class="story-overlay" role="toolbar" aria-label="Aksi story">
+            <button class="story-action view-btn" 
+                    aria-label="Lihat detail story dari ${storyName}" 
+                    data-action="view"
+                    type="button">
+              <i class="fas fa-eye" aria-hidden="true"></i>
+              <span class="sr-only">Lihat detail</span>
             </button>
             ${
               hasLocation
                 ? `
-              <button class="story-action location-btn" aria-label="Lihat di peta" data-action="location">
-                <i class="fas fa-map-marker-alt"></i>
+              <button class="story-action location-btn" 
+                      aria-label="Lihat lokasi story ${storyName} di peta" 
+                      data-action="location"
+                      type="button">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                <span class="sr-only">Lihat di peta</span>
               </button>
             `
                 : ""
             }
           </div>
-        </div>
+        </header>
   
-        <div class="story-content">
-          <div class="story-header">
+        <main class="story-content">
+          <header class="story-header">
             <div class="author-info">
-              <div class="author-avatar" title="${storyName}">
-                <span class="avatar-text">${storyName
-                  .charAt(0)
-                  .toUpperCase()}</span>
+              <div class="author-avatar" 
+                   role="img" 
+                   aria-label="Avatar ${storyName}"
+                   title="Avatar ${storyName}">
+                <span class="avatar-text" aria-hidden="true">
+                  ${storyName.charAt(0).toUpperCase()}
+                </span>
               </div>
               <div class="author-details">
-                <h3 class="author-name" id="story-author-${index}" title="${storyName}">
+                <h3 class="author-name" 
+                    id="story-title-${index}" 
+                    title="${storyName}">
                   ${storyName}
                 </h3>
-                <time class="story-date" datetime="${
-                  story.createdAt
-                }" title="${this.formatDate(story.createdAt)}">
+                <time class="story-date" 
+                      datetime="${story.createdAt}" 
+                      title="Dipublikasikan ${this.formatDate(story.createdAt)}"
+                      id="story-meta-${index}">
                   ${this.formatRelativeTime(story.createdAt)}
                 </time>
               </div>
             </div>
             
-            <div class="story-actions">
-              <button class="action-btn like-btn" aria-label="Suka story" data-action="like" data-liked="false">
-                <i class="far fa-heart"></i>
+            <div class="story-actions" role="group" aria-label="Aksi interaksi story">
+              <button class="action-btn like-btn" 
+                      aria-label="Sukai story dari ${storyName}" 
+                      aria-pressed="false"
+                      data-action="like" 
+                      data-liked="false"
+                      type="button">
+                <i class="far fa-heart" aria-hidden="true"></i>
+                <span class="sr-only">Suka</span>
               </button>
-              <button class="action-btn share-btn" aria-label="Bagikan story" data-action="share">
-                <i class="fas fa-share-alt"></i>
+              <button class="action-btn share-btn" 
+                      aria-label="Bagikan story dari ${storyName}" 
+                      data-action="share"
+                      type="button">
+                <i class="fas fa-share-alt" aria-hidden="true"></i>
+                <span class="sr-only">Bagikan</span>
               </button>
             </div>
-          </div>
+          </header>
   
-          <p class="story-description" id="story-desc-${index}" title="${storyDescription}">
+          <section class="story-description" 
+                   id="story-desc-${index}" 
+                   title="${storyDescription}"
+                   role="text">
             ${truncatedDesc}
-          </p>
+          </section>
   
-          <div class="story-footer">
+          <footer class="story-footer">
             ${
               hasLocation
                 ? `
-              <div class="story-location">
-                <i class="fas fa-map-pin"></i>
+              <div class="story-location" role="status" aria-label="Story memiliki informasi lokasi">
+                <i class="fas fa-map-pin" aria-hidden="true"></i>
                 <span>Lokasi tersedia</span>
               </div>
             `
                 : `
-              <div class="story-no-location">
-                <i class="fas fa-map-pin"></i>
+              <div class="story-no-location" role="status" aria-label="Story tidak memiliki informasi lokasi">
+                <i class="fas fa-map-pin" aria-hidden="true"></i>
                 <span>Tanpa lokasi</span>
               </div>
             `
             }
-          </div>
-        </div>
+          </footer>
+        </main>
       </article>
     `;
   }

@@ -55,45 +55,56 @@
     <script type="module" src="/scripts/index.js"></script>
   </head>
   <body>
-    <a href="#main-content" class="skip-link">
+    <a href="#main-content" class="skip-link" id="skip-to-content">
       <i class="fas fa-arrow-down" aria-hidden="true"></i>
       Lewati ke konten utama
     </a>
 
-    <header role="banner">
+    <header role="banner" id="site-header">
       <div class="main-header container">
-        <a class="brand-name" href="#/" aria-label="Beranda Dicoding Stories">
-          <i class="fas fa-book-open" aria-hidden="true"></i>
-          Dicoding Stories
-        </a>
+        <h1 class="brand-name">
+          <a href="#/" aria-label="Beranda Dicoding Stories" role="link">
+            <i class="fas fa-book-open" aria-hidden="true"></i>
+            Dicoding Stories
+          </a>
+        </h1>
 
         <nav
           id="navigation-drawer"
           class="navigation-drawer"
           role="navigation"
           aria-label="Menu utama"
+          aria-hidden="true"
         >
           <div class="nav-header">
             <h2 class="nav-title">
               <i class="fas fa-compass" aria-hidden="true"></i>
               Navigasi
             </h2>
+            <button
+              class="nav-close"
+              id="nav-close-btn"
+              aria-label="Tutup menu navigasi"
+              type="button"
+            >
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
           </div>
-          <ul id="nav-list" class="nav-list">
-            <li>
-              <a href="#/">
+          <ul id="nav-list" class="nav-list" role="menubar">
+            <li role="none">
+              <a href="#/" role="menuitem">
                 <i class="fas fa-home" aria-hidden="true"></i>
                 Beranda
               </a>
             </li>
-            <li>
-              <a href="#/add">
+            <li role="none">
+              <a href="#/add" role="menuitem">
                 <i class="fas fa-plus-circle" aria-hidden="true"></i>
                 Tambah Story
               </a>
             </li>
-            <li>
-              <a href="#/about">
+            <li role="none">
+              <a href="#/about" role="menuitem">
                 <i class="fas fa-info-circle" aria-hidden="true"></i>
                 Tentang
               </a>
@@ -107,42 +118,79 @@
           aria-label="Buka menu navigasi"
           aria-expanded="false"
           aria-controls="navigation-drawer"
+          aria-haspopup="true"
+          type="button"
         >
           <i class="fas fa-bars" aria-hidden="true"></i>
+          <span class="sr-only">Menu</span>
         </button>
       </div>
     </header>
 
-    <main id="main-content" class="main-content" role="main" tabindex="-1">
-      <div class="page-loader" id="page-loader" style="display: none">
-        <div class="loader-spinner">
+    <main
+      id="main-content"
+      class="main-content"
+      role="main"
+      tabindex="-1"
+      aria-label="Konten utama"
+    >
+      <div
+        class="page-loader"
+        id="page-loader"
+        style="display: none"
+        role="status"
+        aria-live="polite"
+        aria-label="Memuat halaman"
+      >
+        <div class="loader-spinner" aria-hidden="true">
           <i class="fas fa-spinner fa-spin"></i>
         </div>
         <p>Memuat halaman...</p>
       </div>
     </main>
 
-    <div
+    <aside
       class="toast-container"
       id="toast-container"
+      role="region"
       aria-live="polite"
       aria-atomic="true"
-    ></div>
+      aria-label="Notifikasi"
+    ></aside>
 
     <script>
       if ("startViewTransition" in document) {
-        window.addEventListener("hashchange", (event) => {
-          if (!event.detail?.skipTransition) {
-            document.startViewTransition(() => {});
+        let isTransitioning = false;
+
+        window.addEventListener("hashchange", async (event) => {
+          if (isTransitioning) return;
+
+          isTransitioning = true;
+
+          try {
+            if (document.startViewTransition) {
+              await document.startViewTransition(() => {
+                return new Promise((resolve) => {
+                  setTimeout(resolve, 50);
+                });
+              }).finished;
+            }
+          } catch (error) {
+            console.warn("View transition failed:", error);
+          } finally {
+            isTransitioning = false;
           }
         });
       }
+
       window.showToast = function (message, type = "info", duration = 3000) {
         const container = document.getElementById("toast-container");
         if (!container) return;
 
         const toast = document.createElement("div");
         toast.className = `toast toast-${type}`;
+        toast.setAttribute("role", "alert");
+        toast.setAttribute("aria-live", "assertive");
 
         const icons = {
           success: "fas fa-check-circle",
@@ -154,7 +202,7 @@
         toast.innerHTML = `
           <i class="${icons[type]}" aria-hidden="true"></i>
           <span>${message}</span>
-          <button class="toast-close" aria-label="Tutup notifikasi">
+          <button class="toast-close" aria-label="Tutup notifikasi" type="button">
             <i class="fas fa-times" aria-hidden="true"></i>
           </button>
         `;
@@ -183,6 +231,9 @@
 
     <style>
       .nav-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 16px 0 24px 0;
         border-bottom: 1px solid var(--border);
         margin-bottom: 16px;
@@ -195,6 +246,27 @@
         display: flex;
         align-items: center;
         gap: 8px;
+      }
+
+      .nav-close {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: var(--radius);
+        transition: var(--transition);
+      }
+
+      .nav-close:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .navigation-drawer[aria-hidden="false"] .nav-close {
+        display: block;
       }
 
       .page-loader {

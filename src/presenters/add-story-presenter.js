@@ -14,7 +14,7 @@ export class AddStoryPresenter {
 
   setupEventHandlers() {
     this.checkAuthenticationStatus();
-    this.setupViewEventHandlers();
+    this.setupViewCallbacks();
   }
 
   checkAuthenticationStatus() {
@@ -27,38 +27,38 @@ export class AddStoryPresenter {
     }
   }
 
-  setupViewEventHandlers() {
-    this.view.onFormSubmissionRequested((formData) => {
-      this.handleFormSubmission(formData);
-    });
+  setupViewCallbacks() {
+    this.view.onFormSubmissionRequested = (formData) => {
+      return this.handleFormSubmission(formData);
+    };
 
-    this.view.onStepValidationRequested((step, data) => {
+    this.view.onStepValidationRequested = (step, data) => {
       return this.validateStep(step, data);
-    });
+    };
 
-    this.view.onStepChangeRequested((fromStep, toStep, data) => {
+    this.view.onStepChangeRequested = (fromStep, toStep, data) => {
       return this.handleStepChange(fromStep, toStep, data);
-    });
+    };
 
-    this.view.onCancelRequested(() => {
+    this.view.onCancelRequested = () => {
       this.handleCancellation();
-    });
+    };
 
-    this.view.onRetryRequested(() => {
+    this.view.onRetryRequested = () => {
       this.handleRetrySubmission();
-    });
+    };
 
-    this.view.onDescriptionChanged((description) => {
+    this.view.onDescriptionChanged = (description) => {
       this.handleDescriptionChange(description);
-    });
+    };
 
-    this.view.onPhotoChanged((photo) => {
+    this.view.onPhotoChanged = (photo) => {
       this.handlePhotoChange(photo);
-    });
+    };
 
-    this.view.onLocationChanged((location) => {
+    this.view.onLocationChanged = (location) => {
       this.handleLocationChange(location);
-    });
+    };
   }
 
   async handleFormSubmission(formData) {
@@ -69,7 +69,7 @@ export class AddStoryPresenter {
 
     try {
       this.isSubmitting = true;
-      this.view.setSubmissionState(true);
+      this.view.showLoading();
 
       const validationResult = this.validateCompleteForm(formData);
       if (!validationResult.isValid) {
@@ -85,14 +85,13 @@ export class AddStoryPresenter {
       });
 
       const result = await this.model.submitStory(formData);
-
       this.handleSubmissionSuccess(result);
     } catch (error) {
       console.error("Error in form submission:", error);
       this.handleSubmissionError(error);
     } finally {
       this.isSubmitting = false;
-      this.view.setSubmissionState(false);
+      this.view.hideLoading();
     }
   }
 
@@ -398,40 +397,9 @@ export class AddStoryPresenter {
     }
   }
 
-  handleCameraError(error) {
-    console.error("Camera error:", error);
-
-    let errorMessage = "Tidak dapat mengakses kamera";
-
-    if (error.name === "NotAllowedError") {
-      errorMessage =
-        "Akses kamera ditolak. Periksa pengaturan browser dan berikan izin kamera.";
-    } else if (error.name === "NotFoundError") {
-      errorMessage = "Kamera tidak ditemukan pada perangkat ini.";
-    } else if (error.name === "NotSupportedError") {
-      errorMessage = "Browser tidak mendukung akses kamera.";
-    } else if (error.name === "NotReadableError") {
-      errorMessage = "Kamera sedang digunakan oleh aplikasi lain.";
-    }
-
-    this.view.showCameraError(errorMessage);
-  }
-
-  handleLocationError(error) {
-    console.error("Location error:", error);
-
-    let errorMessage = "Tidak dapat mendeteksi lokasi";
-
-    if (error.code === error.PERMISSION_DENIED) {
-      errorMessage =
-        "Akses lokasi ditolak. Periksa pengaturan browser dan berikan izin lokasi.";
-    } else if (error.code === error.POSITION_UNAVAILABLE) {
-      errorMessage = "Informasi lokasi tidak tersedia saat ini.";
-    } else if (error.code === error.TIMEOUT) {
-      errorMessage = "Timeout saat mendeteksi lokasi. Silakan coba lagi.";
-    }
-
-    this.view.showLocationError(errorMessage);
+  handleGuestMode() {
+    console.log("Handling guest mode for add story");
+    this.view.showGuestModeInfo();
   }
 
   getCurrentProgress() {
@@ -450,5 +418,15 @@ export class AddStoryPresenter {
       photo: this.validatePhotoStep(this.currentStepData.photo),
       location: this.validateLocationStep(this.currentStepData.location),
     };
+  }
+
+  cleanup() {
+    this.currentStepData = {
+      description: "",
+      photo: null,
+      location: null,
+    };
+    this.isSubmitting = false;
+    console.log("AddStoryPresenter cleaned up");
   }
 }

@@ -44,13 +44,13 @@ class App {
     if (isLoggedIn) {
       const currentUser = authService.getCurrentUser();
       navList.innerHTML = `
-        <li><a href="#/">Beranda</a></li>
-        <li><a href="#/add">Tambah Story</a></li>
-        <li><a href="#/about">Tentang</a></li>
+        <li role="none"><a href="#/" role="menuitem">Beranda</a></li>
+        <li role="none"><a href="#/add" role="menuitem">Tambah Story</a></li>
+        <li role="none"><a href="#/about" role="menuitem">Tentang</a></li>
         <li class="user-info">
           <span class="user-name">👤 ${currentUser?.name || "User"}</span>
         </li>
-        <li><button id="logout-button" class="logout-button btn btn-secondary">Keluar</button></li>
+        <li role="none"><button id="logout-button" class="logout-button btn btn-secondary" type="button">Keluar</button></li>
       `;
 
       const logoutButton = document.getElementById("logout-button");
@@ -63,8 +63,8 @@ class App {
       }
     } else {
       navList.innerHTML = `
-        <li><a href="#/login">Masuk</a></li>
-        <li><a href="#/about">Tentang</a></li>
+        <li role="none"><a href="#/login" role="menuitem">Masuk</a></li>
+        <li role="none"><a href="#/about" role="menuitem">Tentang</a></li>
       `;
     }
   }
@@ -73,11 +73,30 @@ class App {
     this.#drawerButton.addEventListener("click", () => {
       const isOpen = this.#navigationDrawer.classList.toggle("open");
       this.#drawerButton.setAttribute("aria-expanded", isOpen.toString());
-      this.#drawerButton.setAttribute(
-        "aria-label",
-        isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"
-      );
+      this.#navigationDrawer.setAttribute("aria-hidden", (!isOpen).toString());
+
+      if (isOpen) {
+        this.#drawerButton.setAttribute("aria-label", "Tutup menu navigasi");
+        document.body.style.overflow = "hidden";
+
+        setTimeout(() => {
+          const firstMenuItem =
+            this.#navigationDrawer.querySelector('[role="menuitem"]');
+          if (firstMenuItem) firstMenuItem.focus();
+        }, 100);
+      } else {
+        this.#drawerButton.setAttribute("aria-label", "Buka menu navigasi");
+        document.body.style.overflow = "";
+      }
     });
+
+    const navCloseBtn = document.getElementById("nav-close-btn");
+    if (navCloseBtn) {
+      navCloseBtn.addEventListener("click", () => {
+        this.#closeDrawer();
+        this.#drawerButton.focus();
+      });
+    }
 
     document.body.addEventListener("click", (event) => {
       if (
@@ -86,12 +105,6 @@ class App {
       ) {
         this.#closeDrawer();
       }
-
-      this.#navigationDrawer.querySelectorAll("a").forEach((link) => {
-        if (link.contains(event.target)) {
-          this.#closeDrawer();
-        }
-      });
     });
 
     document.addEventListener("keydown", (event) => {
@@ -103,12 +116,49 @@ class App {
         this.#drawerButton.focus();
       }
     });
+
+    this.#navigationDrawer.addEventListener("keydown", (event) => {
+      if (event.key === "Tab") {
+        this.#handleMenuTabNavigation(event);
+      }
+    });
+
+    this.#navigationDrawer.addEventListener("click", (event) => {
+      if (event.target.closest("a")) {
+        this.#closeDrawer();
+      }
+    });
+  }
+
+  #handleMenuTabNavigation(event) {
+    const menuItems =
+      this.#navigationDrawer.querySelectorAll('[role="menuitem"]');
+    const firstMenuItem = menuItems[0];
+    const lastMenuItem = menuItems[menuItems.length - 1];
+    const navCloseBtn = document.getElementById("nav-close-btn");
+
+    if (event.shiftKey) {
+      if (document.activeElement === firstMenuItem) {
+        event.preventDefault();
+        if (navCloseBtn) navCloseBtn.focus();
+      }
+    } else {
+      if (
+        document.activeElement === lastMenuItem ||
+        document.activeElement === navCloseBtn
+      ) {
+        event.preventDefault();
+        firstMenuItem.focus();
+      }
+    }
   }
 
   #closeDrawer() {
     this.#navigationDrawer.classList.remove("open");
     this.#drawerButton.setAttribute("aria-expanded", "false");
+    this.#navigationDrawer.setAttribute("aria-hidden", "true");
     this.#drawerButton.setAttribute("aria-label", "Buka menu navigasi");
+    document.body.style.overflow = "";
   }
 
   #setupViewTransitions() {
@@ -194,8 +244,11 @@ class App {
       }
 
       this.#content.innerHTML = `
-        <div class="loading-container" style="min-height: 200px; display: flex; align-items: center; justify-content: center;">
-          <div class="loading-spinner"></div>
+        <div class="loading-container" 
+             style="min-height: 200px; display: flex; align-items: center; justify-content: center;"
+             role="status"
+             aria-label="Memuat halaman">
+          <div class="loading-spinner" aria-hidden="true"></div>
           <p style="margin-left: 15px;">Memuat halaman...</p>
         </div>
       `;
@@ -205,6 +258,7 @@ class App {
       const htmlContent = await page.render();
       this.#content.innerHTML = htmlContent;
       this.#currentPage = page;
+
       if (page.afterRender) {
         try {
           await page.afterRender();
@@ -231,7 +285,7 @@ class App {
 
   #showNotFound() {
     this.#content.innerHTML = `
-      <div class="error-container">
+      <div class="error-container" role="alert" aria-live="assertive">
         <h1>404 - Halaman Tidak Ditemukan</h1>
         <p>Halaman yang Anda cari tidak tersedia.</p>
         <a href="#/" class="retry-button btn btn-primary">Kembali ke Beranda</a>
@@ -241,10 +295,12 @@ class App {
 
   #showPageError() {
     this.#content.innerHTML = `
-      <div class="error-container">
+      <div class="error-container" role="alert" aria-live="assertive">
         <h1>Terjadi Kesalahan</h1>
         <p>Tidak dapat memuat halaman. Silakan coba lagi.</p>
-        <button onclick="window.location.reload()" class="retry-button btn btn-primary">
+        <button onclick="window.location.reload()" 
+                class="retry-button btn btn-primary"
+                type="button">
           Muat Ulang
         </button>
       </div>
