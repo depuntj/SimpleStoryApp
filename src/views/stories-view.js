@@ -774,6 +774,143 @@ export class StoriesView {
     }
   }
 
+  showSuccessMessage(message) {
+    if (typeof window.showToast === "function") {
+      window.showToast(message, "success");
+    }
+    this.announceToScreenReader(message);
+  }
+
+  showErrorMessage(message) {
+    if (typeof window.showToast === "function") {
+      window.showToast(message, "error");
+    }
+    this.announceToScreenReader(message);
+  }
+
+  showStoryModal(story) {
+    const modal = document.createElement("div");
+    modal.className = "story-modal";
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-labelledby", "modal-title");
+    modal.setAttribute("aria-describedby", "modal-description");
+
+    modal.innerHTML = `
+      <div class="modal-backdrop" aria-hidden="true"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modal-title">Story dari ${story.name}</h2>
+          <button class="modal-close" 
+                  aria-label="Tutup modal" 
+                  type="button">
+            <i class="fas fa-times" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <img src="${story.photoUrl}" 
+               alt="Foto story oleh ${story.name}" 
+               class="modal-image"
+               role="img">
+          <div id="modal-description" class="modal-description">
+            ${story.description}
+          </div>
+          <div class="modal-meta">
+            <div class="meta-item">
+              <i class="fas fa-user" aria-hidden="true"></i>
+              <span>Oleh: ${story.name}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-calendar" aria-hidden="true"></i>
+              <span>${this.formatDate(story.createdAt)}</span>
+            </div>
+            ${
+              story.lat && story.lon
+                ? `
+              <div class="meta-item">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                <span>Lokasi: ${story.lat.toFixed(6)}, ${story.lon.toFixed(
+                    6
+                  )}</span>
+              </div>
+            `
+                : ""
+            }
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Setup event handlers
+    const closeBtn = modal.querySelector(".modal-close");
+    const backdrop = modal.querySelector(".modal-backdrop");
+
+    const closeModal = () => {
+      modal.remove();
+      document.body.style.overflow = "";
+      this.announceToScreenReader("Modal ditutup");
+    };
+
+    closeBtn.addEventListener("click", closeModal);
+    backdrop.addEventListener("click", closeModal);
+
+    modal.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeModal();
+      }
+    });
+
+    // Trap focus in modal
+    const focusableElements = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+
+    modal.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+          }
+        } else {
+          if (document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+          }
+        }
+      }
+    });
+
+    document.body.style.overflow = "hidden";
+    setTimeout(() => firstFocusable.focus(), 100);
+    this.announceToScreenReader(`Modal story dari ${story.name} dibuka`);
+  }
+
+  focusMapOnLocation(lat, lon, story) {
+    if (this.map && this.isMapReady) {
+      this.map.setView([lat, lon], 15);
+
+      // Find and open popup for the story
+      this.markers.forEach((marker) => {
+        const markerLatLng = marker.getLatLng();
+        if (
+          Math.abs(markerLatLng.lat - lat) < 0.0001 &&
+          Math.abs(markerLatLng.lng - lon) < 0.0001
+        ) {
+          marker.openPopup();
+        }
+      });
+
+      this.announceToScreenReader(
+        `Peta difokuskan ke lokasi story ${story.name}`
+      );
+    }
+  }
+
   animateNumber(element, target) {
     let current = 0;
     const increment = Math.max(1, Math.ceil(target / 20));

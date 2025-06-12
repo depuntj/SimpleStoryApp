@@ -37,27 +37,13 @@ export class StoriesPresenter {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      console.log("📚 Loading stories from API...");
       const rawStories = await this.model.getAllStories();
-
-      console.log("📊 Raw stories from API:", {
-        count: rawStories?.length || 0,
-        sample: rawStories?.[0] || null,
-      });
-
       const validatedStories = this.validateAndSanitizeStories(rawStories);
       this.currentStories = validatedStories;
 
-      console.log("✅ Validated stories:", {
-        original: rawStories?.length || 0,
-        validated: validatedStories.length,
-      });
-
       if (!validatedStories || validatedStories.length === 0) {
-        console.warn("❌ No valid stories to display");
         this.view.showEmptyState();
       } else {
-        console.log("🎉 Rendering stories to view");
         this.displayStories();
       }
     } catch (error) {
@@ -71,20 +57,14 @@ export class StoriesPresenter {
     const storiesWithLocation = this.getStoriesWithLocation(filteredStories);
     const stats = this.calculateStats(filteredStories);
 
+    // Delegate semua UI operations ke view
     this.view.renderStoriesList(filteredStories);
     this.view.addMarkersToMap(storiesWithLocation);
     this.view.updateStats(stats);
   }
 
   validateAndSanitizeStories(stories) {
-    console.log("🔍 Starting validation process...");
-
     if (!Array.isArray(stories)) {
-      console.error(
-        "❌ Stories data is not an array:",
-        typeof stories,
-        stories
-      );
       return [];
     }
 
@@ -92,33 +72,18 @@ export class StoriesPresenter {
       .filter((story) => this.isValidStory(story))
       .map((story) => this.sanitizeStory(story));
 
-    console.log(
-      `✅ Validation complete: ${validStories.length}/${stories.length} stories valid`
-    );
     return validStories;
   }
 
   isValidStory(story) {
     if (!story || typeof story !== "object") {
-      console.warn("❌ Invalid story object:", story);
       return false;
     }
 
     const requiredFields = ["id", "photoUrl", "createdAt"];
     const missingFields = requiredFields.filter((field) => !story[field]);
 
-    if (missingFields.length > 0) {
-      console.warn(
-        `❌ Story missing required fields: ${missingFields.join(", ")}`,
-        {
-          id: story.id,
-          available: Object.keys(story),
-        }
-      );
-      return false;
-    }
-
-    return true;
+    return missingFields.length === 0;
   }
 
   sanitizeStory(story) {
@@ -201,9 +166,6 @@ export class StoriesPresenter {
   async handleRetry() {
     if (this.retryAttempts < this.maxRetryAttempts) {
       this.retryAttempts++;
-      console.log(
-        `🔄 Retrying to load stories (attempt ${this.retryAttempts})`
-      );
       await this.loadStories();
     } else {
       this.view.showErrorState(
@@ -217,7 +179,6 @@ export class StoriesPresenter {
   }
 
   handleStoryDetail(storyId) {
-    console.log("📖 Opening story detail:", storyId);
     const story = this.currentStories.find((s) => s.id === storyId);
     if (story) {
       this.view.showStoryModal(story);
@@ -225,7 +186,6 @@ export class StoriesPresenter {
   }
 
   handleLocationFocus(storyId) {
-    console.log("📍 Focusing on story location:", storyId);
     const story = this.currentStories.find((s) => s.id === storyId);
     if (story && story.lat && story.lon) {
       this.view.focusMapOnLocation(story.lat, story.lon, story);
@@ -233,12 +193,10 @@ export class StoriesPresenter {
   }
 
   handleStoryLike(storyId) {
-    console.log("❤️ Story liked:", storyId);
     this.saveLikeStatus(storyId, true);
   }
 
   handleStoryShare(storyId) {
-    console.log("📤 Story shared:", storyId);
     const story = this.currentStories.find((s) => s.id === storyId);
     if (story) {
       this.shareStory(story);
@@ -246,22 +204,20 @@ export class StoriesPresenter {
   }
 
   handleFilterChange(filter) {
-    console.log("🔍 Filter changed to:", filter);
     this.currentFilter = filter;
     this.displayStories();
   }
 
   handleViewModeChange(viewMode) {
-    console.log("👁️ View mode changed to:", viewMode);
     this.currentViewMode = viewMode;
   }
 
   handleMapCenter() {
-    console.log("🎯 Centering map");
+    this.view.centerMapToMarkers();
   }
 
   handleMapFullscreen() {
-    console.log("📺 Toggling map fullscreen");
+    this.view.toggleMapFullscreen();
   }
 
   saveLikeStatus(storyId, isLiked) {
@@ -288,14 +244,10 @@ export class StoriesPresenter {
       navigator.clipboard
         .writeText(shareText)
         .then(() => {
-          if (typeof window.showToast === "function") {
-            window.showToast("Link berhasil disalin!", "success");
-          }
+          this.view.showSuccessMessage("Link berhasil disalin!");
         })
         .catch(() => {
-          if (typeof window.showToast === "function") {
-            window.showToast("Gagal membagikan story", "error");
-          }
+          this.view.showErrorMessage("Gagal membagikan story");
         });
     }
   }

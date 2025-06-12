@@ -7,7 +7,7 @@ export class LoginView {
 
   render() {
     return `
-      <section class="auth-page">
+      <main class="auth-page" role="main">
         <div class="auth-background">
           <div class="auth-shapes">
             <div class="shape shape-1"></div>
@@ -17,16 +17,16 @@ export class LoginView {
         </div>
         
         <div class="container">
-          <div class="auth-container">
+          <article class="auth-container">
             <header class="auth-header">
               <div class="auth-logo">
-                <i class="fas fa-book-open"></i>
+                <i class="fas fa-book-open" aria-hidden="true"></i>
               </div>
               <h1>Dicoding Stories</h1>
               <p>Bergabunglah dengan komunitas untuk berbagi cerita</p>
             </header>
             
-            <div class="auth-content">
+            <section class="auth-content">
               <div class="auth-tabs" role="tablist">
                 <button 
                   id="login-tab" 
@@ -35,8 +35,9 @@ export class LoginView {
                   role="tab"
                   aria-selected="true"
                   aria-controls="login-form-container"
+                  aria-describedby="login-description"
                 >
-                  <i class="fas fa-sign-in-alt"></i>
+                  <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
                   Masuk
                 </button>
                 <button 
@@ -46,177 +47,240 @@ export class LoginView {
                   role="tab"
                   aria-selected="false"
                   aria-controls="register-form-container"
+                  aria-describedby="register-description"
                 >
-                  <i class="fas fa-user-plus"></i>
+                  <i class="fas fa-user-plus" aria-hidden="true"></i>
                   Daftar
                 </button>
               </div>
-
-              <div id="login-form-container" class="auth-form-container" role="tabpanel" aria-labelledby="login-tab">
+  
+              <div id="login-form-container" 
+                   class="auth-form-container" 
+                   role="tabpanel" 
+                   aria-labelledby="login-tab"
+                   aria-describedby="login-description">
+                <div id="login-description" class="sr-only">
+                  Form untuk masuk ke akun Dicoding Stories
+                </div>
                 <form id="login-form" class="auth-form" novalidate>
-                  <div class="form-group">
-                    <label for="login-email" class="form-label">
-                      <i class="fas fa-envelope"></i>
-                      Email
-                    </label>
-                    <div class="input-group">
-                      <span class="input-icon">
-                        <i class="fas fa-envelope"></i>
-                      </span>
-                      <input 
-                        type="email" 
-                        id="login-email" 
-                        name="email" 
-                        class="form-input" 
-                        placeholder="example@email.com"
-                        required
-                        autocomplete="email"
-                        aria-describedby="login-email-help"
-                      >
+                  <fieldset>
+                    <legend class="sr-only">Informasi Login</legend>
+                    
+                    <div class="form-group">
+                      <label for="login-email" class="form-label">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        Email
+                        <span class="required-indicator" aria-label="wajib diisi">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">
+                          <i class="fas fa-envelope"></i>
+                        </span>
+                        <input 
+                          type="email" 
+                          id="login-email" 
+                          name="email" 
+                          class="form-input" 
+                          placeholder="example@email.com"
+                          required
+                          autocomplete="email"
+                          aria-describedby="login-email-help login-email-error"
+                          aria-invalid="false"
+                        >
+                      </div>
+                      <small id="login-email-help" class="form-help">
+                        Masukkan alamat email yang valid
+                      </small>
+                      <div id="login-email-error" class="field-error" role="alert" aria-live="polite"></div>
                     </div>
-                    <small id="login-email-help" class="sr-only">Masukkan alamat email yang valid</small>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="login-password" class="form-label">
-                      <i class="fas fa-lock"></i>
-                      Password
-                    </label>
-                    <div class="input-group">
-                      <span class="input-icon">
-                        <i class="fas fa-lock"></i>
-                      </span>
-                      <input 
-                        type="password" 
-                        id="login-password" 
-                        name="password" 
-                        class="form-input" 
-                        placeholder="Masukkan password"
-                        required
-                        autocomplete="current-password"
-                      >
-                      <button type="button" class="password-toggle" aria-label="Toggle password visibility">
-                        <i class="fas fa-eye"></i>
-                      </button>
+  
+                    <div class="form-group">
+                      <label for="login-password" class="form-label">
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        Password
+                        <span class="required-indicator" aria-label="wajib diisi">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">
+                          <i class="fas fa-lock"></i>
+                        </span>
+                        <input 
+                          type="password" 
+                          id="login-password" 
+                          name="password" 
+                          class="form-input" 
+                          placeholder="Masukkan password"
+                          required
+                          autocomplete="current-password"
+                          aria-describedby="login-password-help login-password-error"
+                          aria-invalid="false"
+                        >
+                        <button type="button" 
+                                class="password-toggle" 
+                                aria-label="Tampilkan password"
+                                aria-pressed="false"
+                                aria-describedby="password-toggle-help">
+                          <i class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                      <small id="login-password-help" class="form-help">
+                        Masukkan password akun Anda
+                      </small>
+                      <small id="password-toggle-help" class="sr-only">
+                        Klik untuk menampilkan atau menyembunyikan password
+                      </small>
+                      <div id="login-password-error" class="field-error" role="alert" aria-live="polite"></div>
                     </div>
-                  </div>
-
-                  <button type="submit" id="login-submit" class="auth-submit-button">
-                    <span class="btn-text">
-                      <i class="fas fa-sign-in-alt"></i>
-                      Masuk
-                    </span>
-                    <span class="btn-loading" style="display: none;">
-                      <i class="fas fa-spinner fa-spin"></i>
-                      Memproses...
-                    </span>
-                  </button>
+  
+                    <button type="submit" id="login-submit" class="auth-submit-button">
+                      <span class="btn-text">
+                        <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+                        Masuk
+                      </span>
+                      <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        Memproses...
+                      </span>
+                    </button>
+                  </fieldset>
                 </form>
               </div>
-
-              <div id="register-form-container" class="auth-form-container" style="display: none;" role="tabpanel" aria-labelledby="register-tab">
+  
+              <div id="register-form-container" 
+                   class="auth-form-container" 
+                   style="display: none;" 
+                   role="tabpanel" 
+                   aria-labelledby="register-tab"
+                   aria-describedby="register-description">
+                <div id="register-description" class="sr-only">
+                  Form untuk mendaftar akun baru Dicoding Stories
+                </div>
                 <form id="register-form" class="auth-form" novalidate>
-                  <div class="form-group">
-                    <label for="register-name" class="form-label">
-                      <i class="fas fa-user"></i>
-                      Nama Lengkap
-                    </label>
-                    <div class="input-group">
-                      <span class="input-icon">
-                        <i class="fas fa-user"></i>
-                      </span>
-                      <input 
-                        type="text" 
-                        id="register-name" 
-                        name="name" 
-                        class="form-input" 
-                        placeholder="Masukkan nama lengkap"
-                        required
-                        autocomplete="name"
-                        minlength="2"
-                      >
+                  <fieldset>
+                    <legend class="sr-only">Informasi Pendaftaran</legend>
+                    
+                    <div class="form-group">
+                      <label for="register-name" class="form-label">
+                        <i class="fas fa-user" aria-hidden="true"></i>
+                        Nama Lengkap
+                        <span class="required-indicator" aria-label="wajib diisi">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">
+                          <i class="fas fa-user"></i>
+                        </span>
+                        <input 
+                          type="text" 
+                          id="register-name" 
+                          name="name" 
+                          class="form-input" 
+                          placeholder="Masukkan nama lengkap"
+                          required
+                          autocomplete="name"
+                          minlength="2"
+                          aria-describedby="register-name-help register-name-error"
+                          aria-invalid="false"
+                        >
+                      </div>
+                      <small id="register-name-help" class="form-help">
+                        Nama akan ditampilkan di profil Anda
+                      </small>
+                      <div id="register-name-error" class="field-error" role="alert" aria-live="polite"></div>
                     </div>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="register-email" class="form-label">
-                      <i class="fas fa-envelope"></i>
-                      Email
-                    </label>
-                    <div class="input-group">
-                      <span class="input-icon">
-                        <i class="fas fa-envelope"></i>
-                      </span>
-                      <input 
-                        type="email" 
-                        id="register-email" 
-                        name="email" 
-                        class="form-input" 
-                        placeholder="example@email.com"
-                        required
-                        autocomplete="email"
-                        aria-describedby="register-email-help"
-                      >
+  
+                    <div class="form-group">
+                      <label for="register-email" class="form-label">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        Email
+                        <span class="required-indicator" aria-label="wajib diisi">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">
+                          <i class="fas fa-envelope"></i>
+                        </span>
+                        <input 
+                          type="email" 
+                          id="register-email" 
+                          name="email" 
+                          class="form-input" 
+                          placeholder="example@email.com"
+                          required
+                          autocomplete="email"
+                          aria-describedby="register-email-help register-email-error"
+                          aria-invalid="false"
+                        >
+                      </div>
+                      <small id="register-email-help" class="form-help">
+                        Email akan digunakan untuk login
+                      </small>
+                      <div id="register-email-error" class="field-error" role="alert" aria-live="polite"></div>
                     </div>
-                    <small id="register-email-help" class="form-help">Email akan digunakan untuk login</small>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="register-password" class="form-label">
-                      <i class="fas fa-lock"></i>
-                      Password
-                    </label>
-                    <div class="input-group">
-                      <span class="input-icon">
-                        <i class="fas fa-lock"></i>
-                      </span>
-                      <input 
-                        type="password" 
-                        id="register-password" 
-                        name="password" 
-                        class="form-input" 
-                        placeholder="Minimal 8 karakter"
-                        required
-                        autocomplete="new-password"
-                        minlength="8"
-                        aria-describedby="register-password-help"
-                      >
-                      <button type="button" class="password-toggle" aria-label="Toggle password visibility">
-                        <i class="fas fa-eye"></i>
-                      </button>
+  
+                    <div class="form-group">
+                      <label for="register-password" class="form-label">
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        Password
+                        <span class="required-indicator" aria-label="wajib diisi">*</span>
+                      </label>
+                      <div class="input-group">
+                        <span class="input-icon" aria-hidden="true">
+                          <i class="fas fa-lock"></i>
+                        </span>
+                        <input 
+                          type="password" 
+                          id="register-password" 
+                          name="password" 
+                          class="form-input" 
+                          placeholder="Minimal 8 karakter"
+                          required
+                          autocomplete="new-password"
+                          minlength="8"
+                          aria-describedby="register-password-help register-password-error"
+                          aria-invalid="false"
+                        >
+                        <button type="button" 
+                                class="password-toggle" 
+                                aria-label="Tampilkan password"
+                                aria-pressed="false">
+                          <i class="fas fa-eye" aria-hidden="true"></i>
+                        </button>
+                      </div>
+                      <small id="register-password-help" class="form-help">
+                        Password harus minimal 8 karakter
+                      </small>
+                      <div id="register-password-error" class="field-error" role="alert" aria-live="polite"></div>
                     </div>
-                    <small id="register-password-help" class="form-help">Password harus minimal 8 karakter</small>
-                  </div>
-
-                  <button type="submit" id="register-submit" class="auth-submit-button">
-                    <span class="btn-text">
-                      <i class="fas fa-user-plus"></i>
-                      Daftar
-                    </span>
-                    <span class="btn-loading" style="display: none;">
-                      <i class="fas fa-spinner fa-spin"></i>
-                      Mendaftar...
-                    </span>
-                  </button>
+  
+                    <button type="submit" id="register-submit" class="auth-submit-button">
+                      <span class="btn-text">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>
+                        Daftar
+                      </span>
+                      <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        Mendaftar...
+                      </span>
+                    </button>
+                  </fieldset>
                 </form>
               </div>
-
-              <div id="auth-message" class="auth-message" style="display: none;" role="status" aria-live="polite"></div>
+  
+              <div id="auth-message" class="auth-message" style="display: none;" role="status" aria-live="polite" aria-atomic="true"></div>
               
-              <div class="auth-footer">
+              <aside class="auth-footer">
                 <p class="guest-info">
-                  <i class="fas fa-info-circle"></i>
+                  <i class="fas fa-info-circle" aria-hidden="true"></i>
                   Atau gunakan mode tamu untuk melihat stories tanpa login
                 </p>
                 <a href="#/" class="guest-link">
-                  <i class="fas fa-eye"></i>
+                  <i class="fas fa-eye" aria-hidden="true"></i>
                   Lihat sebagai Tamu
                 </a>
-              </div>
-            </div>
-          </div>
+              </aside>
+            </section>
+          </article>
         </div>
-      </section>
+      </main>
     `;
   }
 

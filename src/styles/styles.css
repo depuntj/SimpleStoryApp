@@ -77,26 +77,6 @@ body {
   border: 0;
 }
 
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: var(--text-primary);
-  color: var(--text-white);
-  padding: 12px 16px;
-  text-decoration: none;
-  z-index: 10000;
-  border-radius: var(--radius);
-  font-weight: 600;
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
-}
-
-.skip-link:focus {
-  transform: translateY(0);
-  top: 6px;
-}
-
 .container {
   padding: 0 20px;
   margin: 0 auto;
@@ -1330,6 +1310,11 @@ header {
     transition: transform 0.3s ease;
     border: 2px solid var(--primary);
     box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    white-space: nowrap;
   }
 
   .skip-link:focus {
@@ -1341,6 +1326,12 @@ header {
 
   .skip-link:focus-visible {
     outline: 3px solid var(--warning);
+  }
+
+  .skip-link:hover:focus {
+    background: var(--primary);
+    color: var(--text-white);
+    transform: translateY(0) scale(1.05);
   }
 
   #main-content:focus {
@@ -1365,6 +1356,87 @@ header {
       left: 12px;
       right: 12px;
       text-align: center;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+    }
+
+    .skip-link:focus {
+      top: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .skip-link {
+      left: 8px;
+      right: 8px;
+      padding: 8px 10px;
+      font-size: 0.8rem;
+    }
+
+    .skip-link:focus {
+      top: 8px;
+    }
+  }
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.3s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  ::view-transition-old(root) {
+    animation-name: fade-out;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: fade-in;
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+
+  .main-content {
+    view-transition-name: main-content;
+  }
+
+  .stories-page {
+    view-transition-name: stories-page;
+  }
+
+  .add-story-page {
+    view-transition-name: add-story-page;
+  }
+
+  .about-page {
+    view-transition-name: about-page;
+  }
+
+  .auth-page {
+    view-transition-name: auth-page;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+    }
+
+    * {
+      view-transition-name: none !important;
     }
   }
 }

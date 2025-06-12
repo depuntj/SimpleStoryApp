@@ -13,9 +13,9 @@ export class AddStoryView {
 
   render() {
     return `
-      <div class="add-story-page">
+      <main class="add-story-page" role="main">
         <div class="add-story-container">
-          <div class="story-header">
+          <header class="story-header">
             <div class="story-header-content">
               <h1>
                 <i class="fas fa-plus-circle" aria-hidden="true"></i>
@@ -23,307 +23,343 @@ export class AddStoryView {
               </h1>
               <p>Bagikan momen spesial Anda dengan komunitas Dicoding</p>
             </div>
-          </div>
-
-          <div class="progress-section">
-            <div class="progress-steps">
-              <div class="progress-step ${
+          </header>
+  
+          <nav class="progress-section" aria-label="Progress pembuatan story">
+            <ol class="progress-steps" role="list">
+              <li class="progress-step ${
                 this.currentStep >= 1 ? "active" : ""
-              } ${this.currentStep > 1 ? "completed" : ""}" data-step="1">
-                <div class="progress-step-icon">
+              } ${this.currentStep > 1 ? "completed" : ""}" 
+                  data-step="1" role="listitem">
+                <div class="progress-step-icon" aria-hidden="true">
                   <i class="fas fa-edit"></i>
                 </div>
                 <span class="progress-step-label">Deskripsi</span>
-              </div>
+              </li>
               
-              <div class="progress-step ${
+              <li class="progress-step ${
                 this.currentStep >= 2 ? "active" : ""
-              } ${this.currentStep > 2 ? "completed" : ""}" data-step="2">
-                <div class="progress-step-icon">
+              } ${this.currentStep > 2 ? "completed" : ""}" 
+                  data-step="2" role="listitem">
+                <div class="progress-step-icon" aria-hidden="true">
                   <i class="fas fa-camera"></i>
                 </div>
                 <span class="progress-step-label">Foto</span>
-              </div>
+              </li>
               
-              <div class="progress-step ${
+              <li class="progress-step ${
                 this.currentStep >= 3 ? "active" : ""
-              }" data-step="3">
-                <div class="progress-step-icon">
+              }" 
+                  data-step="3" role="listitem">
+                <div class="progress-step-icon" aria-hidden="true">
                   <i class="fas fa-map-marker-alt"></i>
                 </div>
                 <span class="progress-step-label">Lokasi</span>
-              </div>
-            </div>
+              </li>
+            </ol>
             
-            <div class="progress-line">
+            <div class="progress-line" role="progressbar" 
+                 aria-valuenow="${this.currentStep}" 
+                 aria-valuemin="1" 
+                 aria-valuemax="3"
+                 aria-label="Progress langkah ${this.currentStep} dari 3">
               <div class="progress-fill" style="width: ${
                 (this.currentStep / this.totalSteps) * 100
               }%"></div>
             </div>
-          </div>
-
-          <form id="add-story-form" class="story-form">
-      
-            <div class="form-step ${
+          </nav>
+  
+          <form id="add-story-form" class="story-form" role="form" aria-label="Form pembuatan story">
+            <section class="form-step ${
               this.currentStep === 1 ? "active" : ""
-            }" data-step="1">
+            }" 
+                     data-step="1" 
+                     aria-labelledby="step-1-title"
+                     role="tabpanel">
               <div class="step-content">
-                <div class="step-header">
-                  <h2 class="step-title">
-                    <i class="fas fa-pen-fancy"></i>
+                <header class="step-header">
+                  <h2 class="step-title" id="step-1-title">
+                    <i class="fas fa-pen-fancy" aria-hidden="true"></i>
                     Ceritakan Pengalaman Anda
                   </h2>
                   <p class="step-description">
                     Tulis deskripsi menarik tentang momen yang akan Anda bagikan
                   </p>
-                </div>
-
+                </header>
+  
                 <div class="description-section">
-                  <div class="form-group">
-                    <label for="story-description" class="form-label">
-                      <i class="fas fa-comment-dots"></i>
-                      Deskripsi Story
-                      <span class="label-required">*Wajib</span>
-                    </label>
-                    <div class="textarea-container">
-                      <textarea 
-                        id="story-description" 
-                        name="description"
-                        class="form-textarea"
-                        placeholder="Ceritakan tentang momen ini... Apa yang membuatnya spesial? Bagikan pengalaman atau pelajaran yang didapat..."
-                        maxlength="${CONFIG.VALIDATION.MAX_DESCRIPTION_LENGTH}"
-                        required
-                        aria-describedby="desc-help desc-counter"
-                      ></textarea>
-                      <div class="textarea-footer">
-                        <small id="desc-help" class="form-help">
-                          <i class="fas fa-info-circle"></i>
-                          Minimal ${
-                            CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH
-                          } karakter
-                        </small>
-                        <span id="desc-counter" class="char-counter">
-                          0/${CONFIG.VALIDATION.MAX_DESCRIPTION_LENGTH}
-                        </span>
+                  <fieldset>
+                    <legend class="sr-only">Informasi Deskripsi Story</legend>
+                    
+                    <div class="form-group">
+                      <label for="story-description" class="form-label">
+                        <i class="fas fa-comment-dots" aria-hidden="true"></i>
+                        Deskripsi Story
+                        <span class="label-required">*Wajib</span>
+                      </label>
+                      <div class="textarea-container">
+                        <textarea 
+                          id="story-description" 
+                          name="description"
+                          class="form-textarea"
+                          placeholder="Ceritakan tentang momen ini... Apa yang membuatnya spesial? Bagikan pengalaman atau pelajaran yang didapat..."
+                          maxlength="${
+                            CONFIG.VALIDATION.MAX_DESCRIPTION_LENGTH
+                          }"
+                          required
+                          aria-describedby="desc-help desc-counter"
+                          aria-invalid="false"
+                        ></textarea>
+                        <div class="textarea-footer">
+                          <small id="desc-help" class="form-help">
+                            <i class="fas fa-info-circle" aria-hidden="true"></i>
+                            Minimal ${
+                              CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH
+                            } karakter
+                          </small>
+                          <span id="desc-counter" class="char-counter" aria-live="polite">
+                            0/${CONFIG.VALIDATION.MAX_DESCRIPTION_LENGTH}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="tips-card">
+                  </fieldset>
+  
+                  <aside class="tips-card">
                     <h3>
-                      <i class="fas fa-lightbulb"></i>
+                      <i class="fas fa-lightbulb" aria-hidden="true"></i>
                       Tips menulis deskripsi yang menarik
                     </h3>
-                    <ul class="tips-list">
-                      <li>
-                        <i class="fas fa-camera"></i>
+                    <ul class="tips-list" role="list">
+                      <li role="listitem">
+                        <i class="fas fa-camera" aria-hidden="true"></i>
                         Ceritakan konteks dan suasana saat foto diambil
                       </li>
-                      <li>
-                        <i class="fas fa-graduation-cap"></i>
+                      <li role="listitem">
+                        <i class="fas fa-graduation-cap" aria-hidden="true"></i>
                         Bagikan pelajaran atau insight yang didapat
                       </li>
-                      <li>
-                        <i class="fas fa-heart"></i>
+                      <li role="listitem">
+                        <i class="fas fa-heart" aria-hidden="true"></i>
                         Gunakan bahasa yang personal dan autentik
                       </li>
-                      <li>
-                        <i class="fas fa-users"></i>
+                      <li role="listitem">
+                        <i class="fas fa-users" aria-hidden="true"></i>
                         Buat konten yang relatable untuk komunitas
                       </li>
                     </ul>
-                  </div>
+                  </aside>
                 </div>
               </div>
-            </div>
-
-            <div class="form-step ${
+            </section>
+  
+            <section class="form-step ${
               this.currentStep === 2 ? "active" : ""
-            }" data-step="2">
+            }" 
+                     data-step="2"
+                     aria-labelledby="step-2-title"
+                     role="tabpanel">
               <div class="step-content">
-                <div class="step-header">
-                  <h2 class="step-title">
-                    <i class="fas fa-camera-retro"></i>
+                <header class="step-header">
+                  <h2 class="step-title" id="step-2-title">
+                    <i class="fas fa-camera-retro" aria-hidden="true"></i>
                     Ambil Foto dengan Kamera
                   </h2>
                   <p class="step-description">
                     Gunakan kamera perangkat untuk mengambil foto story Anda
                   </p>
-                </div>
-
+                </header>
+  
                 <div class="camera-section">
                   <div class="camera-container">
-                    <div class="camera-viewport" id="camera-viewport">
-                      <video id="camera-video" class="camera-preview" autoplay playsinline muted style="display: none;"></video>
-                      <canvas id="photo-canvas" class="photo-canvas" style="display: none;"></canvas>
+                    <div class="camera-viewport" id="camera-viewport" role="img" aria-live="polite">
+                      <video id="camera-video" 
+                             class="camera-preview" 
+                             autoplay 
+                             playsinline 
+                             muted 
+                             style="display: none;"
+                             aria-label="Preview kamera untuk mengambil foto"></video>
+                      <canvas id="photo-canvas" 
+                              class="photo-canvas" 
+                              style="display: none;"
+                              aria-label="Canvas untuk memproses foto"></canvas>
                       
                       <div id="camera-placeholder" class="camera-placeholder">
-                        <i class="fas fa-video"></i>
+                        <i class="fas fa-video" aria-hidden="true"></i>
                         <h3>Siap Mengambil Foto?</h3>
                         <p>Pastikan pencahayaan cukup dan objek terlihat jelas dalam frame</p>
                         <button type="button" id="start-camera-btn" class="camera-button btn-camera-primary">
-                          <i class="fas fa-play"></i>
+                          <i class="fas fa-play" aria-hidden="true"></i>
                           Aktifkan Kamera
                         </button>
                       </div>
-
+  
                       <div id="photo-preview" class="photo-preview" style="display: none;">
-                        <img id="captured-image" alt="Foto yang diambil">
+                        <img id="captured-image" alt="Foto yang baru saja diambil">
                         <div class="photo-overlay">
                           <button type="button" id="retake-btn" class="camera-button btn-camera-secondary">
-                            <i class="fas fa-redo"></i>
+                            <i class="fas fa-redo" aria-hidden="true"></i>
                             Ambil Ulang
                           </button>
                         </div>
                       </div>
                     </div>
-
-                    <div class="camera-controls" id="camera-controls" style="display: none;">
+  
+                    <div class="camera-controls" id="camera-controls" style="display: none;" role="toolbar" aria-label="Kontrol kamera">
                       <button type="button" id="capture-btn" class="camera-button btn-camera-capture pulse">
-                        <i class="fas fa-camera"></i>
+                        <i class="fas fa-camera" aria-hidden="true"></i>
                         Ambil Foto
                       </button>
                       <button type="button" id="stop-camera-btn" class="camera-button btn-camera-secondary">
-                        <i class="fas fa-stop"></i>
+                        <i class="fas fa-stop" aria-hidden="true"></i>
                         Batal
                       </button>
                     </div>
                   </div>
-
-                  <div class="camera-tips">
+  
+                  <aside class="camera-tips">
                     <h3>
-                      <i class="fas fa-camera"></i>
+                      <i class="fas fa-camera" aria-hidden="true"></i>
                       Tips foto yang bagus
                     </h3>
-                    <div class="tips-grid">
-                      <div class="tip-item">
-                        <i class="fas fa-sun"></i>
+                    <ul class="tips-grid" role="list">
+                      <li class="tip-item" role="listitem">
+                        <i class="fas fa-sun" aria-hidden="true"></i>
                         <span>Cari pencahayaan yang baik</span>
-                      </div>
-                      <div class="tip-item">
-                        <i class="fas fa-hand-paper"></i>
+                      </li>
+                      <li class="tip-item" role="listitem">
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
                         <span>Pegang kamera dengan stabil</span>
-                      </div>
-                      <div class="tip-item">
-                        <i class="fas fa-eye"></i>
+                      </li>
+                      <li class="tip-item" role="listitem">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
                         <span>Fokus pada objek utama</span>
-                      </div>
-                      <div class="tip-item">
-                        <i class="fas fa-mobile-alt"></i>
+                      </li>
+                      <li class="tip-item" role="listitem">
+                        <i class="fas fa-mobile-alt" aria-hidden="true"></i>
                         <span>Posisikan frame dengan baik</span>
-                      </div>
-                    </div>
-                  </div>
+                      </li>
+                    </ul>
+                  </aside>
                 </div>
               </div>
-            </div>
-
-            <div class="form-step ${
+            </section>
+  
+            <section class="form-step ${
               this.currentStep === 3 ? "active" : ""
-            }" data-step="3">
+            }" 
+                     data-step="3"
+                     aria-labelledby="step-3-title"
+                     role="tabpanel">
               <div class="step-content">
-                <div class="step-header">
-                  <h2 class="step-title">
-                    <i class="fas fa-map-marked-alt"></i>
+                <header class="step-header">
+                  <h2 class="step-title" id="step-3-title">
+                    <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
                     Tandai Lokasi
                   </h2>
                   <p class="step-description">
                     Tambahkan informasi lokasi untuk memberikan konteks pada story
                     <span class="label-optional">(Opsional)</span>
                   </p>
-                </div>
-
+                </header>
+  
                 <div class="location-section">
                   <div class="map-container">
-                    <div id="location-map" class="location-map"></div>
+                    <div id="location-map" 
+                         class="location-map" 
+                         role="application" 
+                         aria-label="Peta interaktif untuk memilih lokasi"
+                         tabindex="0"></div>
                     
-                    <div class="map-overlay">
+                    <div class="map-overlay" role="toolbar" aria-label="Kontrol peta">
                       <button type="button" id="detect-location-btn" class="map-control-btn">
-                        <i class="fas fa-crosshairs"></i>
+                        <i class="fas fa-crosshairs" aria-hidden="true"></i>
                         Deteksi Lokasi Saya
                       </button>
                       <button type="button" id="clear-location-btn" class="map-control-btn btn-danger" style="display: none;">
-                        <i class="fas fa-times"></i>
+                        <i class="fas fa-times" aria-hidden="true"></i>
                         Hapus Lokasi
                       </button>
                     </div>
                   </div>
-
+  
                   <div class="location-info">
-                    <div class="location-display" id="location-display">
+                    <div class="location-display" id="location-display" aria-live="polite">
                       <div class="location-status">
-                        <i class="fas fa-map-pin location-icon"></i>
+                        <i class="fas fa-map-pin location-icon" aria-hidden="true"></i>
                         <div class="location-text">
                           <h4>Belum ada lokasi dipilih</h4>
                           <p>Klik pada peta atau gunakan deteksi otomatis</p>
                         </div>
                       </div>
                     </div>
-
-                    <div class="location-notes">
+  
+                    <aside class="location-notes">
                       <h4>
-                        <i class="fas fa-info-circle"></i>
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
                         Tentang Lokasi
                       </h4>
-                      <ul>
-                        <li>
-                          <i class="fas fa-check"></i>
+                      <ul role="list">
+                        <li role="listitem">
+                          <i class="fas fa-check" aria-hidden="true"></i>
                           Lokasi bersifat opsional dan dapat dilewati
                         </li>
-                        <li>
-                          <i class="fas fa-map"></i>
+                        <li role="listitem">
+                          <i class="fas fa-map" aria-hidden="true"></i>
                           Membantu komunitas menemukan tempat menarik
                         </li>
-                        <li>
-                          <i class="fas fa-globe"></i>
+                        <li role="listitem">
+                          <i class="fas fa-globe" aria-hidden="true"></i>
                           Data lokasi akan ditampilkan di peta stories
                         </li>
-                        <li>
-                          <i class="fas fa-shield-alt"></i>
+                        <li role="listitem">
+                          <i class="fas fa-shield-alt" aria-hidden="true"></i>
                           Lokasi disimpan dengan aman dan dapat dihapus
                         </li>
                       </ul>
-                    </div>
+                    </aside>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="form-navigation">
-              <div class="nav-buttons">
+            </section>
+  
+            <footer class="form-navigation">
+              <div class="nav-buttons" role="group" aria-label="Navigasi form">
                 <button type="button" id="prev-btn" class="nav-button btn-secondary" style="display: none;">
-                  <i class="fas fa-arrow-left"></i>
+                  <i class="fas fa-arrow-left" aria-hidden="true"></i>
                   <span class="btn-text">Sebelumnya</span>
                 </button>
-
+  
                 <button type="button" id="next-btn" class="nav-button btn-primary" disabled>
                   <span class="btn-text">
                     Selanjutnya
-                    <i class="fas fa-arrow-right"></i>
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
                   </span>
                 </button>
-
+  
                 <button type="submit" id="submit-btn" class="nav-button btn-submit" style="display: none;">
                   <span class="btn-text">
-                    <i class="fas fa-share"></i>
+                    <i class="fas fa-share" aria-hidden="true"></i>
                     Bagikan Story
                   </span>
                   <span class="btn-loading" style="display: none;">
-                    <i class="fas fa-spinner fa-spin"></i>
+                    <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                     Mengirim...
                   </span>
                 </button>
               </div>
-
+  
               <div class="cancel-area">
                 <button type="button" id="cancel-btn" class="cancel-button">
-                  <i class="fas fa-times"></i>
+                  <i class="fas fa-times" aria-hidden="true"></i>
                   Batalkan
                 </button>
               </div>
-            </div>
+            </footer>
           </form>
         </div>
-      </div>
+      </main>
     `;
   }
 
@@ -331,6 +367,8 @@ export class AddStoryView {
     this.setupStepNavigation();
     this.setupFormValidation();
     this.setupAccessibility();
+    this.setupBeforeUnloadHandler();
+    this.setupVisibilityHandler();
     await this.initializeCurrentStep();
   }
 
@@ -570,18 +608,30 @@ export class AddStoryView {
   }
 
   stopCamera() {
-    if (this.cameraStream) {
-      this.cameraStream.getTracks().forEach((track) => track.stop());
-      this.cameraStream = null;
+    try {
+      if (this.cameraStream) {
+        this.cameraStream.getTracks().forEach((track) => {
+          track.stop();
+          track.enabled = false;
+        });
+        this.cameraStream = null;
+      }
+
+      const video = document.getElementById("camera-video");
+      const placeholder = document.getElementById("camera-placeholder");
+      const controls = document.getElementById("camera-controls");
+
+      if (video) {
+        video.style.display = "none";
+        video.srcObject = null;
+      }
+      if (controls) controls.style.display = "none";
+      if (placeholder) placeholder.style.display = "flex";
+
+      this.announceToScreenReader("Kamera dinonaktifkan");
+    } catch (error) {
+      console.warn("Error stopping camera:", error);
     }
-
-    const video = document.getElementById("camera-video");
-    const placeholder = document.getElementById("camera-placeholder");
-    const controls = document.getElementById("camera-controls");
-
-    if (video) video.style.display = "none";
-    if (controls) controls.style.display = "none";
-    if (placeholder) placeholder.style.display = "flex";
   }
 
   async initializeMap() {
@@ -818,25 +868,162 @@ export class AddStoryView {
     document.body.appendChild(announcement);
     setTimeout(() => document.body.removeChild(announcement), 1000);
   }
+  setupBeforeUnloadHandler() {
+    this.beforeUnloadHandler = (e) => {
+      const hasUnsavedData =
+        this.capturedPhoto ||
+        document.getElementById("story-description")?.value.trim();
 
-  cleanup() {
-    this.stopCamera();
-
-    if (this.capturedPhoto) {
-      const capturedImage = document.getElementById("captured-image");
-      if (capturedImage?.src) {
-        URL.revokeObjectURL(capturedImage.src);
+      if (hasUnsavedData) {
+        e.preventDefault();
+        e.returnValue =
+          "Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman?";
+        return e.returnValue;
       }
-      this.capturedPhoto = null;
-    }
+    };
 
-    if (this.map) {
-      this.map.remove();
-      this.map = null;
+    window.addEventListener("beforeunload", this.beforeUnloadHandler);
+  }
+
+  handleVisibilityChange() {
+    if (document.hidden && this.cameraStream) {
+      this.stopCamera();
+      this.announceToScreenReader(
+        "Kamera dihentikan karena aplikasi tidak aktif"
+      );
     }
   }
 
-  destroy() {
-    this.cleanup();
+  setupVisibilityHandler() {
+    this.visibilityHandler = () => this.handleVisibilityChange();
+    document.addEventListener("visibilitychange", this.visibilityHandler);
+  }
+
+  validateImageFile(file) {
+    if (!file) {
+      return { isValid: false, error: "Tidak ada file yang dipilih" };
+    }
+
+    if (file.size > CONFIG.VALIDATION.MAX_FILE_SIZE) {
+      return {
+        isValid: false,
+        error: `Ukuran file terlalu besar. Maksimal ${this.formatFileSize(
+          CONFIG.VALIDATION.MAX_FILE_SIZE
+        )}`,
+      };
+    }
+
+    if (!CONFIG.VALIDATION.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      return {
+        isValid: false,
+        error: "Format file tidak didukung. Gunakan JPEG, PNG, atau WebP",
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  formatFileSize(bytes) {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  async startCamera() {
+    try {
+      if (this.cameraStream) {
+        this.stopCamera();
+      }
+
+      const video = document.getElementById("camera-video");
+      const placeholder = document.getElementById("camera-placeholder");
+      const controls = document.getElementById("camera-controls");
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("CAMERA_NOT_SUPPORTED");
+      }
+
+      this.cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: CONFIG.CAMERA_CONSTRAINTS.video,
+        audio: false,
+      });
+
+      if (video) {
+        video.srcObject = this.cameraStream;
+
+        video.addEventListener("loadedmetadata", () => {
+          if (placeholder) placeholder.style.display = "none";
+          video.style.display = "block";
+          if (controls) controls.style.display = "flex";
+        });
+
+        video.addEventListener("error", (e) => {
+          console.error("Video error:", e);
+          this.showError("Terjadi kesalahan pada video kamera");
+        });
+      }
+
+      this.announceToScreenReader("Kamera berhasil diaktifkan");
+    } catch (error) {
+      console.error("Camera error:", error);
+
+      let errorMessage = "Tidak dapat mengakses kamera.";
+
+      if (error.name === "NotAllowedError") {
+        errorMessage =
+          "Akses kamera ditolak. Pastikan Anda memberikan izin kamera di browser.";
+      } else if (error.name === "NotFoundError") {
+        errorMessage =
+          "Kamera tidak ditemukan. Pastikan perangkat memiliki kamera.";
+      } else if (error.name === "NotSupportedError") {
+        errorMessage = "Browser tidak mendukung akses kamera.";
+      } else if (error.message === "CAMERA_NOT_SUPPORTED") {
+        errorMessage = "Browser tidak mendukung fitur kamera.";
+      }
+
+      this.showError(errorMessage);
+    }
+  }
+
+  cleanup() {
+    try {
+      this.stopCamera();
+
+      if (this.capturedPhoto) {
+        const capturedImage = document.getElementById("captured-image");
+        if (capturedImage?.src && capturedImage.src.startsWith("blob:")) {
+          URL.revokeObjectURL(capturedImage.src);
+        }
+        this.capturedPhoto = null;
+      }
+
+      if (this.map) {
+        try {
+          this.map.remove();
+        } catch (mapError) {
+          console.warn("Error removing map:", mapError);
+        }
+        this.map = null;
+      }
+
+      if (this.mapMarker) {
+        this.mapMarker = null;
+      }
+
+      this.selectedLocation = null;
+      this.currentStep = 1;
+
+      const form = document.getElementById("add-story-form");
+      if (form) {
+        form.reset();
+      }
+
+      document.removeEventListener("keydown", this.keydownHandler);
+      window.removeEventListener("beforeunload", this.beforeUnloadHandler);
+    } catch (error) {
+      console.warn("Error during cleanup:", error);
+    }
   }
 }

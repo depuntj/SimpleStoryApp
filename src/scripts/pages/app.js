@@ -18,10 +18,93 @@ class App {
     this.#setupDrawer();
     this.#setupViewTransitions();
     this.#setupAuthListener();
+    this.#setupSkipToContent();
 
     setTimeout(() => {
       this.#updateNavigation();
     }, 100);
+  }
+
+  #setupSkipToContent() {
+    const skipLink = document.getElementById("skip-to-content");
+
+    if (skipLink) {
+      skipLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.#focusMainContent();
+      });
+
+      skipLink.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.#focusMainContent();
+        }
+      });
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key === "Tab" &&
+        !e.shiftKey &&
+        document.activeElement === document.body
+      ) {
+        const skipLink = document.getElementById("skip-to-content");
+        if (skipLink) {
+          skipLink.focus();
+        }
+      }
+    });
+  }
+
+  #focusMainContent() {
+    const mainContent = document.getElementById("main-content");
+
+    if (mainContent) {
+      mainContent.setAttribute("tabindex", "-1");
+      mainContent.focus();
+
+      mainContent.addEventListener(
+        "blur",
+        () => {
+          mainContent.removeAttribute("tabindex");
+        },
+        { once: true }
+      );
+
+      this.#announceToScreenReader("Langsung ke konten utama");
+    }
+
+    const primaryHeading = mainContent?.querySelector("h1, h2");
+    if (primaryHeading) {
+      setTimeout(() => {
+        primaryHeading.focus();
+        primaryHeading.setAttribute("tabindex", "-1");
+
+        primaryHeading.addEventListener(
+          "blur",
+          () => {
+            primaryHeading.removeAttribute("tabindex");
+          },
+          { once: true }
+        );
+      }, 100);
+    }
+  }
+
+  #announceToScreenReader(message) {
+    const announcement = document.createElement("div");
+    announcement.setAttribute("aria-live", "polite");
+    announcement.setAttribute("aria-atomic", "true");
+    announcement.className = "sr-only";
+    announcement.textContent = message;
+
+    document.body.appendChild(announcement);
+
+    setTimeout(() => {
+      if (document.body.contains(announcement)) {
+        document.body.removeChild(announcement);
+      }
+    }, 1000);
   }
 
   #setupAuthListener() {
@@ -168,20 +251,43 @@ class App {
 
     let hashChangeTimeout = null;
 
-    window.addEventListener("hashchange", async () => {
+    window.addEventListener("hashchange", async (event) => {
       if (hashChangeTimeout) {
         clearTimeout(hashChangeTimeout);
       }
 
+      const oldUrl = event.oldURL?.split("#")[1] || "/";
+      const newUrl = window.location.hash.slice(1) || "/";
+
       hashChangeTimeout = setTimeout(async () => {
-        if (document.startViewTransition) {
-          await document.startViewTransition(async () => {
+        try {
+          const transition = document.startViewTransition(async () => {
             await this.renderPage();
-          }).finished;
-        } else {
+          });
+
+          transition.updateCallbackDone.catch(() => {
+            console.warn(
+              "View transition update failed, continuing without transition"
+            );
+          });
+
+          await transition.finished.catch(() => {
+            console.warn("View transition finished with error");
+          });
+        } catch (error) {
+          console.warn("View transition not supported or failed:", error);
           await this.renderPage();
         }
       }, 50);
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (document.startViewTransition) {
+        document.documentElement.style.setProperty(
+          "view-transition-name",
+          "main"
+        );
+      }
     });
   }
 
@@ -270,9 +376,11 @@ class App {
         }
       }
 
-      this.#content.focus();
+      this.#updatePageAccessibility();
       this.#updatePageTitle(url);
       this.#lastRenderedUrl = url;
+
+      this.#announcePageChange(url);
 
       console.log("Page rendered successfully:", url);
     } catch (error) {
@@ -281,6 +389,36 @@ class App {
     } finally {
       this.#isRendering = false;
     }
+  }
+
+  #updatePageAccessibility() {
+    const mainContent = this.#content;
+
+    if (mainContent) {
+      mainContent.setAttribute("tabindex", "-1");
+
+      const pageHeading = mainContent.querySelector("h1");
+      if (pageHeading) {
+        pageHeading.setAttribute("tabindex", "-1");
+      }
+    }
+
+    const skipLink = document.getElementById("skip-to-content");
+    if (skipLink) {
+      skipLink.removeAttribute("aria-hidden");
+    }
+  }
+
+  #announcePageChange(url) {
+    const pageTitles = {
+      "/": "Halaman beranda dimuat",
+      "/add": "Halaman tambah story dimuat",
+      "/about": "Halaman tentang dimuat",
+      "/login": "Halaman login dimuat",
+    };
+
+    const announcement = pageTitles[url] || "Halaman baru dimuat";
+    this.#announceToScreenReader(announcement);
   }
 
   #showNotFound() {
