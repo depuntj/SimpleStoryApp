@@ -1,16 +1,70 @@
-import { showFormattedDate } from "../scripts/utils/index.js";
 import CONFIG from "../scripts/config.js";
 
 export class StoriesView {
   constructor() {
     this.map = null;
     this.markers = [];
-    this.storiesData = [];
-    this.isMapReady = false;
     this.currentFilter = "all";
     this.currentView = "grid";
+    this.isMapReady = false;
+
+    // Callback registry untuk komunikasi dengan Presenter
+    this.callbacks = {
+      onRetryRequested: null,
+      onRefreshRequested: null,
+      onStoryDetailRequested: null,
+      onLocationFocusRequested: null,
+      onStoryLiked: null,
+      onStoryShared: null,
+      onFilterChanged: null,
+      onViewModeChanged: null,
+      onMapCenterRequested: null,
+      onMapFullscreenToggled: null,
+    };
   }
 
+  // === CALLBACK REGISTRATION METHODS ===
+  onRetryRequested(callback) {
+    this.callbacks.onRetryRequested = callback;
+  }
+
+  onRefreshRequested(callback) {
+    this.callbacks.onRefreshRequested = callback;
+  }
+
+  onStoryDetailRequested(callback) {
+    this.callbacks.onStoryDetailRequested = callback;
+  }
+
+  onLocationFocusRequested(callback) {
+    this.callbacks.onLocationFocusRequested = callback;
+  }
+
+  onStoryLiked(callback) {
+    this.callbacks.onStoryLiked = callback;
+  }
+
+  onStoryShared(callback) {
+    this.callbacks.onStoryShared = callback;
+  }
+
+  onFilterChanged(callback) {
+    this.callbacks.onFilterChanged = callback;
+  }
+
+  onViewModeChanged(callback) {
+    this.callbacks.onViewModeChanged = callback;
+  }
+
+  onMapCenterRequested(callback) {
+    this.callbacks.onMapCenterRequested = callback;
+  }
+
+  onMapFullscreenToggled(callback) {
+    this.callbacks.onMapFullscreenToggled = callback;
+  }
+
+  // === RENDER METHOD ===
   render() {
     return `
       <div class="stories-page">
@@ -71,7 +125,7 @@ export class StoriesView {
           <div class="stories-content">
             <div class="stories-grid-container">
               <div id="stories-container" class="stories-grid" role="main" aria-label="Daftar stories">
-                
+                <!-- Stories akan dirender di sini -->
               </div>
             </div>
 
@@ -102,40 +156,37 @@ export class StoriesView {
     `;
   }
 
+  // === INITIALIZATION ===
   async afterRender() {
     try {
-      this.setupEventHandlers();
+      this.setupUIEventHandlers();
       this.setupAccessibility();
       await this.initializeMap();
     } catch (error) {
       console.error("Error in StoriesView afterRender:", error);
+      this.showInitializationError();
     }
   }
 
-  setupEventHandlers() {
-    try {
-      this.setupViewSwitcher();
-      this.setupFilterTabs();
-      this.setupMapControls();
-    } catch (error) {
-      console.warn("Error setting up event handlers:", error);
-    }
+  setupUIEventHandlers() {
+    this.setupViewSwitcher();
+    this.setupFilterTabs();
+    this.setupMapControls();
+    this.setupRetryHandlers();
+    this.setupKeyboardHandlers();
   }
 
   setupViewSwitcher() {
     const viewBtns = document.querySelectorAll(".view-btn");
-    const container = document.getElementById("stories-container");
 
     viewBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const view = btn.dataset.view;
-        this.currentView = view;
+        this.switchViewMode(view);
 
-        viewBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        container.className = `stories-${view}`;
-        this.announceToScreenReader(`Tampilan diubah ke mode ${view}`);
+        if (this.callbacks.onViewModeChanged) {
+          this.callbacks.onViewModeChanged(view);
+        }
       });
     });
   }
@@ -146,12 +197,11 @@ export class StoriesView {
     filterTabs.forEach((tab) => {
       tab.addEventListener("click", () => {
         const filter = tab.dataset.filter;
-        this.currentFilter = filter;
+        this.switchFilter(filter);
 
-        filterTabs.forEach((t) => t.classList.remove("active"));
-        tab.classList.add("active");
-
-        this.applyFilter(filter);
+        if (this.callbacks.onFilterChanged) {
+          this.callbacks.onFilterChanged(filter);
+        }
       });
     });
   }
@@ -161,59 +211,95 @@ export class StoriesView {
     const fullscreenBtn = document.getElementById("fullscreen-map");
 
     if (centerBtn) {
-      centerBtn.addEventListener("click", () => this.centerMap());
+      centerBtn.addEventListener("click", () => {
+        if (this.callbacks.onMapCenterRequested) {
+          this.callbacks.onMapCenterRequested();
+        }
+      });
     }
 
     if (fullscreenBtn) {
-      fullscreenBtn.addEventListener("click", () => this.toggleFullscreen());
+      fullscreenBtn.addEventListener("click", () => {
+        this.toggleMapFullscreen();
+
+        if (this.callbacks.onMapFullscreenToggled) {
+          this.callbacks.onMapFullscreenToggled();
+        }
+      });
     }
   }
 
-  setupAccessibility() {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        this.closeAnyModal();
+  setupRetryHandlers() {
+    // Event delegation untuk retry buttons
+    document.addEventListener("click", (event) => {
+      if (
+        event.target.matches(".btn-retry") ||
+        event.target.closest(".btn-retry")
+      ) {
+        event.preventDefault();
+        if (this.callbacks.onRetryRequested) {
+          this.callbacks.onRetryRequested();
+        }
       }
     });
   }
 
-  async initializeMap() {
-    try {
-      const mapContainer = document.getElementById("stories-map");
-      if (!mapContainer || typeof L === "undefined") return;
+  setupKeyboardHandlers() {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.closeAnyModal();
+      }
 
-      this.map = L.map("stories-map", {
-        zoomControl: false,
-        attributionControl: false,
-      }).setView([CONFIG.DEFAULT_LOCATION.lat, CONFIG.DEFAULT_LOCATION.lng], 6);
+      if (e.key === "F5" || (e.ctrlKey && e.key === "r")) {
+        e.preventDefault();
+        if (this.callbacks.onRefreshRequested) {
+          this.callbacks.onRefreshRequested();
+        }
+      }
+    });
+  }
 
-      L.control.zoom({ position: "bottomright" }).addTo(this.map);
-      L.control
-        .attribution({ position: "bottomleft", prefix: false })
-        .addTo(this.map);
-
-      const tileLayer = L.tileLayer(CONFIG.MAP_TILES.openstreetmap.url, {
-        attribution: CONFIG.MAP_TILES.openstreetmap.attribution,
-        maxZoom: 18,
-      });
-
-      tileLayer.addTo(this.map);
-      this.isMapReady = true;
-
-      this.map.on("load", () => {
-        this.announceToScreenReader("Peta berhasil dimuat");
-      });
-    } catch (error) {
-      console.error("Error initializing map:", error);
-      this.showMapError();
+  setupAccessibility() {
+    // Setup ARIA attributes dan screen reader support
+    const container = document.getElementById("stories-container");
+    if (container) {
+      container.setAttribute("aria-live", "polite");
+      container.setAttribute("aria-busy", "false");
     }
   }
 
-  renderStoriesList(stories) {
-    console.log("🎨 Rendering stories list:", stories.length);
+  // === UI STATE MANAGEMENT ===
+  switchViewMode(viewMode) {
+    this.currentView = viewMode;
 
-    this.storiesData = stories;
-    this.updateStats(stories);
+    const viewBtns = document.querySelectorAll(".view-btn");
+    const container = document.getElementById("stories-container");
+
+    viewBtns.forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.view === viewMode);
+    });
+
+    if (container) {
+      container.className = `stories-${viewMode}`;
+    }
+
+    this.announceToScreenReader(`Tampilan diubah ke mode ${viewMode}`);
+  }
+
+  switchFilter(filter) {
+    this.currentFilter = filter;
+
+    const filterTabs = document.querySelectorAll(".filter-tab");
+    filterTabs.forEach((tab) => {
+      tab.classList.toggle("active", tab.dataset.filter === filter);
+    });
+
+    this.announceToScreenReader(`Filter diubah ke ${filter}`);
+  }
+
+  // === RENDERING METHODS ===
+  renderStoriesList(storiesData) {
+    console.log("🎨 Rendering stories list:", storiesData.length);
 
     const container = document.getElementById("stories-container");
     if (!container) {
@@ -221,71 +307,32 @@ export class StoriesView {
       return;
     }
 
-    if (!Array.isArray(stories)) {
-      console.error("❌ Stories data is not an array:", stories);
-      this.showError("Data stories tidak valid");
-      return;
-    }
-
-    if (stories.length === 0) {
-      console.log("📭 No stories to display, showing empty state");
+    if (!Array.isArray(storiesData) || storiesData.length === 0) {
       this.showEmptyState();
       return;
     }
 
     try {
-      console.log("🎨 Creating story cards HTML...");
-      const cardsHTML = stories
+      const cardsHTML = storiesData
         .map((story, index) => this.createStoryCard(story, index))
         .join("");
 
       container.innerHTML = cardsHTML;
+      this.setupStoriesInteraction();
+      this.updateStats(storiesData);
 
-      console.log("✅ Story cards rendered, setting up interactions...");
-      this.setupStoryInteractions();
-
-      console.log("🗺️ Adding markers to map...");
-      this.addMarkersToMap(stories);
-
-      this.announceToScreenReader(`${stories.length} stories berhasil dimuat`);
-
-      console.log(`🎉 Successfully rendered ${stories.length} stories`);
+      this.announceToScreenReader(
+        `${storiesData.length} stories berhasil dimuat`
+      );
+      console.log(`🎉 Successfully rendered ${storiesData.length} stories`);
     } catch (error) {
       console.error("❌ Error rendering stories:", error);
-      this.showError("Gagal menampilkan stories");
-    }
-  }
-
-  formatFullDate(dateString) {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        console.warn("⚠️ Invalid date string:", dateString);
-        return dateString;
-      }
-      return date.toLocaleDateString("id-ID", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch (error) {
-      console.warn("❌ Error formatting date:", error, dateString);
-      return dateString;
+      this.showRenderError();
     }
   }
 
   createStoryCard(story, index) {
-    console.log(`🎨 Creating card for story ${index + 1}:`, {
-      id: story.id,
-      name: story.name,
-      hasDescription: !!story.description,
-      hasLocation: !!(story.lat && story.lon),
-    });
-
-    const hasLocation = story.lat && story.lon;
+    const hasLocation = !!(story.lat && story.lon);
     const storyName = story.name || "Anonymous User";
     const storyDescription =
       story.description || "Tidak ada deskripsi tersedia.";
@@ -318,13 +365,13 @@ export class StoriesView {
           </div>
           
           <div class="story-overlay">
-            <button class="story-action view-btn" aria-label="Lihat detail story">
+            <button class="story-action view-btn" aria-label="Lihat detail story" data-action="view">
               <i class="fas fa-eye"></i>
             </button>
             ${
               hasLocation
                 ? `
-              <button class="story-action location-btn" aria-label="Lihat di peta">
+              <button class="story-action location-btn" aria-label="Lihat di peta" data-action="location">
                 <i class="fas fa-map-marker-alt"></i>
               </button>
             `
@@ -347,17 +394,17 @@ export class StoriesView {
                 </h3>
                 <time class="story-date" datetime="${
                   story.createdAt
-                }" title="${this.formatFullDate(story.createdAt)}">
-                  ${this.getRelativeTime(story.createdAt)}
+                }" title="${this.formatDate(story.createdAt)}">
+                  ${this.formatRelativeTime(story.createdAt)}
                 </time>
               </div>
             </div>
             
             <div class="story-actions">
-              <button class="action-btn like-btn" aria-label="Suka story" data-liked="false">
+              <button class="action-btn like-btn" aria-label="Suka story" data-action="like" data-liked="false">
                 <i class="far fa-heart"></i>
               </button>
-              <button class="action-btn share-btn" aria-label="Bagikan story">
+              <button class="action-btn share-btn" aria-label="Bagikan story" data-action="share">
                 <i class="fas fa-share-alt"></i>
               </button>
             </div>
@@ -389,248 +436,94 @@ export class StoriesView {
     `;
   }
 
-  setupStoryInteractions() {
-    console.log("🔗 Setting up story interactions...");
+  setupStoriesInteraction() {
+    const container = document.getElementById("stories-container");
+    if (!container) return;
 
-    document.querySelectorAll(".story-card").forEach((card, cardIndex) => {
-      const storyId = card.dataset.storyId;
+    // Single event listener dengan delegation
+    container.addEventListener("click", (e) => {
+      this.handleStoryInteraction(e);
+    });
 
-      if (!storyId) {
-        console.warn(`❌ Story card ${cardIndex} missing ID:`, card);
-        return;
-      }
+    container.addEventListener("keydown", (e) => {
+      this.handleStoryKeyboardInteraction(e);
+    });
+  }
 
-      console.log(`🔗 Setting up interactions for story: ${storyId}`);
+  handleStoryInteraction(e) {
+    const storyCard = e.target.closest(".story-card");
+    if (!storyCard) return;
 
-      const handleCardClick = (e) => {
+    const storyId = storyCard.dataset.storyId;
+    const action = e.target.closest("[data-action]")?.dataset.action;
+
+    e.stopPropagation();
+
+    switch (action) {
+      case "view":
+        this.triggerStoryDetailRequest(storyId);
+        break;
+      case "location":
+        this.triggerLocationFocusRequest(storyId);
+        break;
+      case "like":
+        this.handleLikeInteraction(e.target.closest(".like-btn"));
+        this.triggerStoryLikeRequest(storyId);
+        break;
+      case "share":
+        this.triggerStoryShareRequest(storyId);
+        break;
+      default:
+        // Click pada card area (bukan pada action buttons)
         if (
           !e.target.closest(".story-overlay") &&
           !e.target.closest(".story-actions")
         ) {
-          console.log("👆 Card clicked, opening detail:", storyId);
-          this.showStoryDetail(storyId);
+          this.triggerStoryDetailRequest(storyId);
         }
-      };
-
-      card.addEventListener("click", handleCardClick);
-      card.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          console.log("⌨️ Card keyboard activated, opening detail:", storyId);
-          this.showStoryDetail(storyId);
-        }
-      });
-      const viewBtn = card.querySelector(".view-btn");
-      if (viewBtn) {
-        viewBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          console.log("👁️ View button clicked:", storyId);
-          this.showStoryDetail(storyId);
-        });
-      }
-
-      const locationBtn = card.querySelector(".location-btn");
-      if (locationBtn) {
-        locationBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          console.log("📍 Location button clicked:", storyId);
-          this.focusOnMap(storyId);
-        });
-      }
-
-      const likeBtn = card.querySelector(".like-btn");
-      if (likeBtn) {
-        likeBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          console.log("❤️ Like button clicked:", storyId);
-          this.toggleLike(likeBtn);
-        });
-      }
-
-      const shareBtn = card.querySelector(".share-btn");
-      if (shareBtn) {
-        shareBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          console.log("📤 Share button clicked:", storyId);
-          this.shareStory(storyId);
-        });
-      }
-    });
-
-    console.log("✅ Story interactions setup complete");
-  }
-
-  showStoryDetail(storyId) {
-    console.log("🔍 Opening story detail for ID:", storyId);
-
-    const story = this.storiesData.find((s) => s.id === storyId);
-    if (!story) {
-      console.error("❌ Story not found:", storyId);
-      if (window.showToast) {
-        window.showToast("Story tidak ditemukan", "error");
-      }
-      return;
     }
-
-    const storyName = story.name || "Anonymous User";
-    const storyDescription =
-      story.description || "Tidak ada deskripsi tersedia.";
-    const photoUrl = story.photoUrl || "";
-    const hasLocation = story.lat && story.lon;
-
-    console.log("📖 Story detail data:", {
-      id: story.id,
-      name: storyName,
-      hasDescription: !!storyDescription,
-      hasLocation,
-    });
-
-    const modal = document.createElement("div");
-    modal.className = "story-modal";
-    modal.innerHTML = `
-      <div class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-container">
-          <button class="modal-close" aria-label="Tutup dialog">
-            <i class="fas fa-times"></i>
-          </button>
-          
-          <div class="modal-content">
-            <div class="modal-image">
-              <img src="${photoUrl}" 
-                   alt="Foto story dari ${storyName}"
-                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-              <div class="image-placeholder" style="display: none;">
-                <i class="fas fa-image"></i>
-                <span>Gambar tidak tersedia</span>
-              </div>
-            </div>
-            
-            <div class="modal-info">
-              <div class="modal-header">
-                <div class="author-info-modal">
-                  <div class="author-avatar-modal" title="${storyName}">
-                    <span class="avatar-text">${storyName
-                      .charAt(0)
-                      .toUpperCase()}</span>
-                  </div>
-                  <div class="author-details-modal">
-                    <h2 id="modal-title" class="author-name-modal">${storyName}</h2>
-                    <time datetime="${
-                      story.createdAt
-                    }" class="story-date-modal">
-                      ${this.formatFullDate(story.createdAt)}
-                    </time>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="modal-body">
-                <div class="story-text-container">
-                  <h3 class="story-text-title">
-                    <i class="fas fa-quote-left"></i>
-                    Story
-                  </h3>
-                  <p class="story-text">${storyDescription}</p>
-                </div>
-                
-                ${
-                  hasLocation
-                    ? `
-                  <div class="story-location-info">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <div class="location-details">
-                      <span class="location-label">Lokasi:</span>
-                      <span class="location-coords">${parseFloat(
-                        story.lat
-                      ).toFixed(4)}, ${parseFloat(story.lon).toFixed(4)}</span>
-                    </div>
-                  </div>
-                `
-                    : `
-                  <div class="story-no-location-info">
-                    <i class="fas fa-map-pin"></i>
-                    <span>Tanpa informasi lokasi</span>
-                  </div>
-                `
-                }
-                
-                <div class="story-meta">
-                  <div class="meta-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <div class="meta-content">
-                      <span class="meta-label">Dibuat:</span>
-                      <span class="meta-value">${this.getRelativeTime(
-                        story.createdAt
-                      )}</span>
-                    </div>
-                  </div>
-                  <div class="meta-item">
-                    <i class="fas fa-user"></i>
-                    <div class="meta-content">
-                      <span class="meta-label">Oleh:</span>
-                      <span class="meta-value">${storyName}</span>
-                    </div>
-                  </div>
-                  ${
-                    hasLocation
-                      ? `
-                  <div class="meta-item">
-                    <i class="fas fa-globe"></i>
-                    <div class="meta-content">
-                      <span class="meta-label">Koordinat:</span>
-                      <span class="meta-value">${parseFloat(story.lat).toFixed(
-                        6
-                      )}, ${parseFloat(story.lon).toFixed(6)}</span>
-                    </div>
-                  </div>
-                  `
-                      : ""
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-    document.body.style.overflow = "hidden";
-
-    const closeBtn = modal.querySelector(".modal-close");
-    const overlay = modal.querySelector(".modal-overlay");
-
-    const closeModal = () => {
-      console.log("🚪 Closing story modal");
-      if (document.body.contains(modal)) {
-        document.body.removeChild(modal);
-        document.body.style.overflow = "";
-      }
-    };
-
-    closeBtn.addEventListener("click", closeModal);
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeModal();
-    });
-
-    document.addEventListener("keydown", function handleEscape(e) {
-      if (e.key === "Escape") {
-        closeModal();
-        document.removeEventListener("keydown", handleEscape);
-      }
-    });
-
-    setTimeout(() => {
-      closeBtn.focus();
-      this.announceToScreenReader(
-        `Modal detail story dari ${storyName} dibuka`
-      );
-    }, 100);
-
-    console.log("✅ Story modal opened successfully");
   }
 
-  toggleLike(btn) {
+  handleStoryKeyboardInteraction(e) {
+    if (e.key === "Enter" || e.key === " ") {
+      const storyCard = e.target.closest(".story-card");
+      if (storyCard) {
+        e.preventDefault();
+        const storyId = storyCard.dataset.storyId;
+        this.triggerStoryDetailRequest(storyId);
+      }
+    }
+  }
+
+  // === CALLBACK TRIGGER METHODS ===
+  triggerStoryDetailRequest(storyId) {
+    if (this.callbacks.onStoryDetailRequested) {
+      this.callbacks.onStoryDetailRequested(storyId);
+    }
+  }
+
+  triggerLocationFocusRequest(storyId) {
+    if (this.callbacks.onLocationFocusRequested) {
+      this.callbacks.onLocationFocusRequested(storyId);
+    }
+  }
+
+  triggerStoryLikeRequest(storyId) {
+    if (this.callbacks.onStoryLiked) {
+      this.callbacks.onStoryLiked(storyId);
+    }
+  }
+
+  triggerStoryShareRequest(storyId) {
+    if (this.callbacks.onStoryShared) {
+      this.callbacks.onStoryShared(storyId);
+    }
+  }
+
+  // === UI INTERACTION METHODS ===
+  handleLikeInteraction(btn) {
+    if (!btn) return;
+
     const icon = btn.querySelector("i");
     const isLiked = btn.dataset.liked === "true";
 
@@ -644,60 +537,58 @@ export class StoriesView {
       btn.classList.add("liked");
     }
 
+    // Visual feedback
     btn.style.transform = "scale(1.2)";
     setTimeout(() => (btn.style.transform = ""), 200);
   }
 
-  shareStory(storyId) {
-    const story = this.storiesData.find((s) => s.id === storyId);
-    if (!story) return;
+  // === MAP METHODS ===
+  async initializeMap() {
+    try {
+      const mapContainer = document.getElementById("stories-map");
+      if (!mapContainer || typeof L === "undefined") {
+        this.showMapError();
+        return;
+      }
 
-    if (navigator.share) {
-      navigator
-        .share({
-          title: `Story by ${story.name}`,
-          text: story.description,
-          url: window.location.href,
-        })
-        .catch(() => this.fallbackShare());
-    } else {
-      this.fallbackShare();
+      this.map = L.map("stories-map", {
+        zoomControl: false,
+        attributionControl: false,
+      }).setView([CONFIG.DEFAULT_LOCATION.lat, CONFIG.DEFAULT_LOCATION.lng], 6);
+
+      L.control.zoom({ position: "bottomright" }).addTo(this.map);
+      L.control
+        .attribution({ position: "bottomleft", prefix: false })
+        .addTo(this.map);
+
+      const tileLayer = L.tileLayer(CONFIG.MAP_TILES.openstreetmap.url, {
+        attribution: CONFIG.MAP_TILES.openstreetmap.attribution,
+        maxZoom: 18,
+      });
+
+      tileLayer.addTo(this.map);
+      this.isMapReady = true;
+
+      this.announceToScreenReader("Peta berhasil dimuat");
+    } catch (error) {
+      console.error("Error initializing map:", error);
+      this.showMapError();
     }
   }
 
-  fallbackShare() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      if (window.showToast) {
-        window.showToast("Link berhasil disalin!", "success");
-      }
-    });
-  }
-
-  addMarkersToMap(stories) {
-    if (!this.isMapReady) return;
+  addMarkersToMap(storiesData) {
+    if (!this.isMapReady || !Array.isArray(storiesData)) return;
 
     this.clearMarkers();
 
-    const storiesWithLocation = stories.filter((s) => s.lat && s.lon);
+    const storiesWithLocation = storiesData.filter((s) => s.lat && s.lon);
 
     storiesWithLocation.forEach((story) => {
       const marker = L.marker([story.lat, story.lon], {
-        icon: this.createCustomIcon(),
+        icon: this.createMapMarkerIcon(),
       }).addTo(this.map);
 
-      marker.bindPopup(`
-        <div class="map-popup">
-          <img src="${story.photoUrl}" alt="Story ${
-        story.name
-      }" class="popup-image">
-          <div class="popup-content">
-            <h4>${story.name}</h4>
-            <p>${story.description.substring(0, 80)}...</p>
-            <small>${this.getRelativeTime(story.createdAt)}</small>
-          </div>
-        </div>
-      `);
-
+      marker.bindPopup(this.createMapPopupContent(story));
       this.markers.push(marker);
     });
 
@@ -707,7 +598,7 @@ export class StoriesView {
     }
   }
 
-  createCustomIcon() {
+  createMapMarkerIcon() {
     return L.divIcon({
       className: "custom-marker",
       html: '<div class="marker-dot"><i class="fas fa-camera"></i></div>',
@@ -716,48 +607,40 @@ export class StoriesView {
     });
   }
 
-  focusOnMap(storyId) {
-    const story = this.storiesData.find((s) => s.id === storyId);
-    if (!story || !story.lat || !story.lon) return;
-
-    this.map.setView([story.lat, story.lon], 15);
-
-    const marker = this.markers.find((m) => {
-      const pos = m.getLatLng();
-      return (
-        Math.abs(pos.lat - story.lat) < 0.0001 &&
-        Math.abs(pos.lng - story.lon) < 0.0001
-      );
-    });
-
-    if (marker) {
-      marker.openPopup();
-    }
-
-    document.querySelector(".stories-map-container").scrollIntoView({
-      behavior: "smooth",
-    });
+  createMapPopupContent(story) {
+    return `
+      <div class="map-popup">
+        <img src="${story.photoUrl}" alt="Story ${
+      story.name
+    }" class="popup-image">
+        <div class="popup-content">
+          <h4>${story.name}</h4>
+          <p>${story.description.substring(0, 80)}...</p>
+          <small>${this.formatRelativeTime(story.createdAt)}</small>
+        </div>
+      </div>
+    `;
   }
 
-  centerMap() {
+  centerMapToMarkers() {
     if (this.markers.length > 0) {
       const group = new L.featureGroup(this.markers);
       this.map.fitBounds(group.getBounds().pad(0.1));
     }
   }
 
-  toggleFullscreen() {
+  toggleMapFullscreen() {
     const container = document.querySelector(".stories-map-container");
     const btn = document.getElementById("fullscreen-map");
-    const icon = btn.querySelector("i");
+    const icon = btn?.querySelector("i");
 
-    if (container.classList.contains("fullscreen")) {
+    if (container?.classList.contains("fullscreen")) {
       container.classList.remove("fullscreen");
-      icon.className = "fas fa-expand";
+      if (icon) icon.className = "fas fa-expand";
       document.body.style.overflow = "";
     } else {
-      container.classList.add("fullscreen");
-      icon.className = "fas fa-compress";
+      container?.classList.add("fullscreen");
+      if (icon) icon.className = "fas fa-compress";
       document.body.style.overflow = "hidden";
     }
 
@@ -766,83 +649,18 @@ export class StoriesView {
     }, 300);
   }
 
-  applyFilter(filter) {
-    const cards = document.querySelectorAll(".story-card");
-    let visibleCount = 0;
-
-    cards.forEach((card) => {
-      const hasLocation = card.classList.contains("has-location");
-      const shouldShow =
-        filter === "all" || (filter === "location" && hasLocation);
-
-      if (shouldShow) {
-        card.style.display = "block";
-        visibleCount++;
-      } else {
-        card.style.display = "none";
-      }
+  clearMarkers() {
+    this.markers.forEach((marker) => {
+      if (this.map) this.map.removeLayer(marker);
     });
-
-    this.updateMapInfo(visibleCount);
+    this.markers = [];
   }
 
-  updateStats(stories) {
-    const totalCount = document.getElementById("total-count");
-    const locationCount = document.getElementById("location-count");
-
-    if (totalCount) {
-      this.animateNumber(totalCount, stories.length);
-    }
-
-    if (locationCount) {
-      const withLocation = stories.filter((s) => s.lat && s.lon).length;
-      this.animateNumber(locationCount, withLocation);
-    }
-  }
-
-  animateNumber(element, target) {
-    let current = 0;
-    const increment = target / 20;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        element.textContent = target;
-        clearInterval(timer);
-      } else {
-        element.textContent = Math.floor(current);
-      }
-    }, 50);
-  }
-
-  updateMapInfo(count) {
-    const mapInfo = document.getElementById("map-info");
-    if (mapInfo) {
-      mapInfo.innerHTML = `
-        <i class="fas fa-info-circle"></i>
-        <span>Menampilkan ${count} stories</span>
-      `;
-    }
-  }
-
-  getRelativeTime(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
-
-    if (diffInSeconds < 60) return "Baru saja";
-    if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} menit lalu`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} jam lalu`;
-    if (diffInSeconds < 604800)
-      return `${Math.floor(diffInSeconds / 86400)} hari lalu`;
-
-    return showFormattedDate(dateString);
-  }
-
-  showLoading() {
+  // === STATE DISPLAY METHODS ===
+  showLoadingState() {
     const container = document.getElementById("stories-container");
     if (container) {
+      container.setAttribute("aria-busy", "true");
       container.innerHTML = `
         <div class="loading-state">
           <div class="loading-spinner"></div>
@@ -852,26 +670,10 @@ export class StoriesView {
     }
   }
 
-  showError(message) {
-    const container = document.getElementById("stories-container");
-    if (container) {
-      container.innerHTML = `
-        <div class="error-state">
-          <i class="fas fa-exclamation-triangle"></i>
-          <h3>Terjadi Kesalahan</h3>
-          <p>${message}</p>
-          <button class="btn-retry" onclick="window.location.reload()">
-            <i class="fas fa-redo"></i>
-            Coba Lagi
-          </button>
-        </div>
-      `;
-    }
-  }
-
   showEmptyState() {
     const container = document.getElementById("stories-container");
     if (container) {
+      container.setAttribute("aria-busy", "false");
       container.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-images"></i>
@@ -886,6 +688,32 @@ export class StoriesView {
     }
   }
 
+  showErrorState(message) {
+    const container = document.getElementById("stories-container");
+    if (container) {
+      container.setAttribute("aria-busy", "false");
+      container.innerHTML = `
+        <div class="error-state">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h3>Terjadi Kesalahan</h3>
+          <p>${message}</p>
+          <button class="btn-retry" type="button">
+            <i class="fas fa-redo"></i>
+            Coba Lagi
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  showRenderError() {
+    this.showErrorState("Gagal menampilkan stories. Silakan coba lagi.");
+  }
+
+  showInitializationError() {
+    this.showErrorState("Gagal memuat halaman. Silakan refresh halaman.");
+  }
+
   showMapError() {
     const mapContainer = document.getElementById("stories-map");
     if (mapContainer) {
@@ -898,17 +726,77 @@ export class StoriesView {
     }
   }
 
-  clearMarkers() {
-    this.markers.forEach((marker) => {
-      if (this.map) this.map.removeLayer(marker);
-    });
-    this.markers = [];
+  // === UTILITY METHODS ===
+  updateStats(storiesData) {
+    const totalCount = document.getElementById("total-count");
+    const locationCount = document.getElementById("location-count");
+
+    if (totalCount) {
+      this.animateNumber(totalCount, storiesData.length);
+    }
+
+    if (locationCount) {
+      const withLocation = storiesData.filter((s) => s.lat && s.lon).length;
+      this.animateNumber(locationCount, withLocation);
+    }
+  }
+
+  animateNumber(element, target) {
+    let current = 0;
+    const increment = Math.max(1, Math.ceil(target / 20));
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        element.textContent = target;
+        clearInterval(timer);
+      } else {
+        element.textContent = current;
+      }
+    }, 50);
+  }
+
+  formatDate(dateString) {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      return dateString;
+    }
+  }
+
+  formatRelativeTime(dateString) {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+
+      if (diffInSeconds < 60) return "Baru saja";
+      if (diffInSeconds < 3600)
+        return `${Math.floor(diffInSeconds / 60)} menit lalu`;
+      if (diffInSeconds < 86400)
+        return `${Math.floor(diffInSeconds / 3600)} jam lalu`;
+      if (diffInSeconds < 604800)
+        return `${Math.floor(diffInSeconds / 86400)} hari lalu`;
+
+      return this.formatDate(dateString);
+    } catch (error) {
+      return dateString;
+    }
   }
 
   closeAnyModal() {
     const modal = document.querySelector(".story-modal");
     if (modal) {
-      modal.querySelector(".modal-close").click();
+      const closeBtn = modal.querySelector(".modal-close");
+      if (closeBtn) closeBtn.click();
     }
   }
 
@@ -918,16 +806,21 @@ export class StoriesView {
     announcement.className = "sr-only";
     announcement.textContent = message;
     document.body.appendChild(announcement);
-    setTimeout(() => document.body.removeChild(announcement), 1000);
+
+    setTimeout(() => {
+      if (document.body.contains(announcement)) {
+        document.body.removeChild(announcement);
+      }
+    }, 1000);
   }
 
+  // === CLEANUP ===
   destroy() {
     this.clearMarkers();
     if (this.map) {
       this.map.remove();
       this.map = null;
     }
-    this.storiesData = [];
     this.isMapReady = false;
   }
 }
