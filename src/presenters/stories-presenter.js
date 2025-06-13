@@ -56,11 +56,10 @@ export class StoriesPresenter {
   displayStories() {
     const filteredStories = this.applyCurrentFilter(this.currentStories);
     const storiesWithLocation = this.getStoriesWithLocation(filteredStories);
-    const stats = this.calculateStats(filteredStories);
 
     this.view.renderStoriesList(filteredStories);
     this.view.addMarkersToMap(storiesWithLocation);
-    this.view.updateStats(stats);
+    this.view.updateStats(filteredStories);
   }
 
   applyCurrentFilter(stories) {
