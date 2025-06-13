@@ -9,7 +9,7 @@ export class AddStoryView {
     this.selectedLocation = null;
     this.capturedPhoto = null;
     this.mapMarker = null;
-    
+
     this.onFormSubmissionRequested = null;
     this.onCancelRequested = null;
   }
@@ -263,7 +263,7 @@ export class AddStoryView {
       const controls = document.getElementById("camera-controls");
 
       this.cameraStream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720, facingMode: "environment" }
+        video: { width: 1280, height: 720, facingMode: "environment" },
       });
 
       video.srcObject = this.cameraStream;
@@ -286,15 +286,19 @@ export class AddStoryView {
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
 
-    canvas.toBlob((blob) => {
-      this.capturedPhoto = blob;
-      capturedImage.src = URL.createObjectURL(blob);
-      video.style.display = "none";
-      controls.style.display = "none";
-      preview.style.display = "block";
-      this.stopCamera();
-      this.updateNavigationState();
-    }, "image/jpeg", 0.8);
+    canvas.toBlob(
+      (blob) => {
+        this.capturedPhoto = blob;
+        capturedImage.src = URL.createObjectURL(blob);
+        video.style.display = "none";
+        controls.style.display = "none";
+        preview.style.display = "block";
+        this.stopCamera();
+        this.updateNavigationState();
+      },
+      "image/jpeg",
+      0.8
+    );
   }
 
   retakePhoto() {
@@ -306,7 +310,7 @@ export class AddStoryView {
 
   stopCamera() {
     if (this.cameraStream) {
-      this.cameraStream.getTracks().forEach(track => track.stop());
+      this.cameraStream.getTracks().forEach((track) => track.stop());
       this.cameraStream = null;
     }
   }
@@ -315,7 +319,9 @@ export class AddStoryView {
     if (typeof L === "undefined") return;
 
     this.map = L.map("location-map").setView([-6.2088, 106.8456], 13);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(this.map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+      this.map
+    );
 
     this.map.on("click", (e) => {
       this.selectedLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
@@ -324,26 +330,30 @@ export class AddStoryView {
       this.updateLocationDisplay();
     });
 
-    document.getElementById("detect-location-btn")?.addEventListener("click", () => {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        this.selectedLocation = { lat, lng };
-        this.map.setView([lat, lng], 15);
-        if (this.mapMarker) this.map.removeLayer(this.mapMarker);
-        this.mapMarker = L.marker([lat, lng]).addTo(this.map);
+    document
+      .getElementById("detect-location-btn")
+      ?.addEventListener("click", () => {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          this.selectedLocation = { lat, lng };
+          this.map.setView([lat, lng], 15);
+          if (this.mapMarker) this.map.removeLayer(this.mapMarker);
+          this.mapMarker = L.marker([lat, lng]).addTo(this.map);
+          this.updateLocationDisplay();
+        });
+      });
+
+    document
+      .getElementById("clear-location-btn")
+      ?.addEventListener("click", () => {
+        this.selectedLocation = null;
+        if (this.mapMarker) {
+          this.map.removeLayer(this.mapMarker);
+          this.mapMarker = null;
+        }
         this.updateLocationDisplay();
       });
-    });
-
-    document.getElementById("clear-location-btn")?.addEventListener("click", () => {
-      this.selectedLocation = null;
-      if (this.mapMarker) {
-        this.map.removeLayer(this.mapMarker);
-        this.mapMarker = null;
-      }
-      this.updateLocationDisplay();
-    });
 
     setTimeout(() => this.map.invalidateSize(), 300);
   }
@@ -358,7 +368,9 @@ export class AddStoryView {
           <i class="fas fa-map-pin"></i>
           <div>
             <h4>Lokasi dipilih</h4>
-            <p>${this.selectedLocation.lat.toFixed(6)}, ${this.selectedLocation.lng.toFixed(6)}</p>
+            <p>${this.selectedLocation.lat.toFixed(
+              6
+            )}, ${this.selectedLocation.lng.toFixed(6)}</p>
           </div>
         </div>
       `;
@@ -395,7 +407,8 @@ export class AddStoryView {
     const submitBtn = document.getElementById("submit-btn");
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+      submitBtn.innerHTML =
+        '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
     }
   }
 

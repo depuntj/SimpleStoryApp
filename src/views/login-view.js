@@ -336,13 +336,6 @@ export class LoginView {
     `;
   }
 
-  afterRender() {
-    this.setupTabSwitching();
-    this.setupPasswordToggle();
-    this.setupFormValidation();
-    this.setupAccessibility();
-  }
-
   setupTabSwitching() {
     const loginTab = document.getElementById("login-tab");
     const registerTab = document.getElementById("register-tab");

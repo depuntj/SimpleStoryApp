@@ -62,7 +62,6 @@ class App {
     if (mainContent) {
       mainContent.setAttribute("tabindex", "-1");
       mainContent.focus();
-
       mainContent.addEventListener(
         "blur",
         () => {
@@ -73,7 +72,6 @@ class App {
 
       this.#announceToScreenReader("Langsung ke konten utama");
     }
-
     const primaryHeading = mainContent?.querySelector("h1, h2");
     if (primaryHeading) {
       setTimeout(() => {

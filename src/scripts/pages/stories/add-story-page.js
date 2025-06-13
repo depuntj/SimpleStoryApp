@@ -38,7 +38,6 @@ export default class AddStoryPage {
   }
 
   setupPresenterCallbacks() {
-    // Setup communication antara presenter dan view
     this.view.onFormSubmissionRequested = (formData) => {
       return this.presenter.handleFormSubmission(formData);
     };
@@ -71,7 +70,6 @@ export default class AddStoryPage {
       this.presenter.handleLocationChange(location);
     };
 
-    // Setup event handlers setelah callbacks terdaftar
     this.presenter.setupEventHandlers();
   }
 
@@ -99,17 +97,14 @@ export default class AddStoryPage {
   }
 
   handleInitializationError(error) {
-    // Tidak ada DOM manipulation langsung - delegate ke view jika tersedia
     if (this.view && typeof this.view.showInitializationError === "function") {
       this.view.showInitializationError(error.message);
     } else {
-      // Fallback hanya jika view tidak tersedia
       this.showFallbackError();
     }
   }
 
   showFallbackError() {
-    // Minimal DOM manipulation dengan accessibility
     const container = document.querySelector(".add-story-container");
     if (container) {
       container.innerHTML = `
@@ -129,7 +124,6 @@ export default class AddStoryPage {
         </div>
       `;
 
-      // Announce error to screen readers
       this.announceToScreenReader(
         "Terjadi kesalahan saat memuat halaman tambah story"
       );
@@ -150,7 +144,6 @@ export default class AddStoryPage {
     }, 1000);
   }
 
-  // Authentication check method
   checkAuthenticationStatus() {
     if (!authService.isLoggedIn()) {
       console.log("User not authenticated, allowing guest mode for add story");
@@ -163,10 +156,8 @@ export default class AddStoryPage {
     }
   }
 
-  // Cleanup method
   destroy() {
     try {
-      // Proper cleanup dengan error handling
       if (this.presenter && typeof this.presenter.cleanup === "function") {
         this.presenter.cleanup();
       }
@@ -175,7 +166,6 @@ export default class AddStoryPage {
         this.view.destroy();
       }
 
-      // Clear references
       this.presenter = null;
       this.view = null;
       this.model = null;
