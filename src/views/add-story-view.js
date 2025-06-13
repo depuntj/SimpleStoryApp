@@ -9,6 +9,25 @@ export class AddStoryView {
     this.selectedLocation = null;
     this.capturedPhoto = null;
     this.mapMarker = null;
+
+    this.onFormSubmissionRequested = null;
+    this.onStepValidationRequested = null;
+    this.onStepChangeRequested = null;
+    this.onCancelRequested = null;
+    this.onRetryRequested = null;
+    this.onDescriptionChanged = null;
+    this.onPhotoChanged = null;
+    this.onLocationChanged = null;
+  }
+
+  async afterRender() {
+    this.setupStepNavigation();
+    this.setupFormValidation();
+    this.setupFormSubmission();
+    this.setupAccessibility();
+    this.setupBeforeUnloadHandler();
+    this.setupVisibilityHandler();
+    await this.initializeCurrentStep();
   }
 
   render() {
@@ -363,15 +382,6 @@ export class AddStoryView {
     `;
   }
 
-  async afterRender() {
-    this.setupStepNavigation();
-    this.setupFormValidation();
-    this.setupAccessibility();
-    this.setupBeforeUnloadHandler();
-    this.setupVisibilityHandler();
-    await this.initializeCurrentStep();
-  }
-
   setupStepNavigation() {
     const nextBtn = document.getElementById("next-btn");
     const prevBtn = document.getElementById("prev-btn");
@@ -411,17 +421,37 @@ export class AddStoryView {
     }
   }
 
-  setupAccessibility() {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        this.handleCancel();
-      }
-    });
+  setupFormValidation() {
+    const textarea = document.getElementById("story-description");
+    const counter = document.getElementById("desc-counter");
 
-    const form = document.getElementById("add-story-form");
-    form?.addEventListener("submit", (e) => {
-      e.preventDefault();
-    });
+    if (textarea && counter) {
+      textarea.addEventListener("input", () => {
+        const length = textarea.value.length;
+        counter.textContent = `${length}/${CONFIG.VALIDATION.MAX_DESCRIPTION_LENGTH}`;
+
+        const isValid = length >= CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH;
+        textarea.classList.toggle("valid", isValid);
+        textarea.classList.toggle("error", length > 0 && !isValid);
+
+        if (this.onDescriptionChanged) {
+          this.onDescriptionChanged(textarea.value);
+        }
+
+        this.updateNavigationState();
+      });
+
+      textarea.addEventListener("blur", () => {
+        const length = textarea.value.length;
+        if (length > 0 && length < CONFIG.VALIDATION.MIN_DESCRIPTION_LENGTH) {
+          textarea.classList.add("error");
+        }
+      });
+
+      textarea.addEventListener("focus", () => {
+        textarea.classList.remove("error");
+      });
+    }
   }
 
   async nextStep() {
@@ -582,8 +612,12 @@ export class AddStoryView {
         preview.style.display = "block";
 
         this.stopCamera();
-        this.updateNavigationState();
 
+        if (this.onPhotoChanged) {
+          this.onPhotoChanged(blob);
+        }
+
+        this.updateNavigationState();
         this.announceToScreenReader("Foto berhasil diambil");
       },
       "image/jpeg",
@@ -686,6 +720,10 @@ export class AddStoryView {
         iconAnchor: [15, 40],
       }),
     }).addTo(this.map);
+
+    if (this.onLocationChanged) {
+      this.onLocationChanged(this.selectedLocation);
+    }
 
     this.updateLocationDisplay();
     this.announceToScreenReader("Lokasi berhasil dipilih");
@@ -844,20 +882,43 @@ export class AddStoryView {
   }
 
   handleCancel() {
-    const hasData =
-      this.capturedPhoto ||
-      document.getElementById("story-description")?.value.trim();
-
-    if (hasData) {
-      if (
-        confirm("Yakin ingin membatalkan? Data yang sudah diisi akan hilang.")
-      ) {
-        this.cleanup();
-        window.location.hash = "#/";
-      }
-    } else {
-      window.location.hash = "#/";
+    if (this.onCancelRequested) {
+      this.onCancelRequested();
     }
+  }
+  getCurrentFormData() {
+    const description = document
+      .getElementById("story-description")
+      ?.value.trim();
+
+    return {
+      description,
+      photo: this.capturedPhoto,
+      location: this.selectedLocation,
+    };
+  }
+
+  setupFormSubmission() {
+    const form = document.getElementById("add-story-form");
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (this.onFormSubmissionRequested) {
+          const formData = this.getCurrentFormData();
+          await this.onFormSubmissionRequested(formData);
+        }
+      });
+    }
+  }
+
+  setupStepNavigation() {
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const cancelBtn = document.getElementById("cancel-btn");
+
+    nextBtn?.addEventListener("click", () => this.nextStep());
+    prevBtn?.addEventListener("click", () => this.prevStep());
+    cancelBtn?.addEventListener("click", () => this.handleCancel());
   }
 
   announceToScreenReader(message) {
@@ -1024,6 +1085,64 @@ export class AddStoryView {
       window.removeEventListener("beforeunload", this.beforeUnloadHandler);
     } catch (error) {
       console.warn("Error during cleanup:", error);
+    }
+  }
+  navigateToHome() {
+    window.location.hash = "#/";
+  }
+
+  navigateToLogin() {
+    window.location.hash = "#/login";
+  }
+
+  resetForm() {
+    try {
+      this.stopCamera();
+
+      if (this.capturedPhoto) {
+        const capturedImage = document.getElementById("captured-image");
+        if (capturedImage?.src && capturedImage.src.startsWith("blob:")) {
+          URL.revokeObjectURL(capturedImage.src);
+        }
+        this.capturedPhoto = null;
+      }
+
+      if (this.map) {
+        try {
+          this.map.remove();
+        } catch (mapError) {
+          console.warn("Error removing map:", mapError);
+        }
+        this.map = null;
+      }
+
+      if (this.mapMarker) {
+        this.mapMarker = null;
+      }
+
+      this.selectedLocation = null;
+      this.currentStep = 1;
+
+      const form = document.getElementById("add-story-form");
+      if (form) {
+        form.reset();
+      }
+
+      this.updateStepDisplay();
+    } catch (error) {
+      console.warn("Error during form reset:", error);
+    }
+  }
+
+  showSubmissionSuccess() {
+    if (window.showToast) {
+      window.showToast("Story berhasil dibagikan!", "success");
+    }
+  }
+
+  showSubmissionError(message) {
+    if (window.showToast) {
+      window.showToast(message, "error");
     }
   }
 }

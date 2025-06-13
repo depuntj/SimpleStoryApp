@@ -1,5 +1,3 @@
-import authService from "../services/auth-service.js";
-
 export class LoginPresenter {
   constructor(model, view) {
     this.model = model;
@@ -7,31 +5,12 @@ export class LoginPresenter {
   }
 
   setupEventHandlers() {
-    this.view.setupTabSwitching();
-
-    const loginForm = document.getElementById("login-form");
-    const registerForm = document.getElementById("register-form");
-
-    loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      await this.handleLogin();
-    });
-
-    registerForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      await this.handleRegister();
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        this.view.clearMessages();
-      }
-    });
+    this.view.onLoginFormSubmit((formData) => this.handleLogin(formData));
+    this.view.onRegisterFormSubmit((formData) => this.handleRegister(formData));
+    this.view.onEscapePressed(() => this.view.clearMessages());
   }
 
-  async handleLogin() {
-    const formData = this.view.getLoginFormData();
-
+  async handleLogin(formData) {
     if (!this.view.validateLoginForm(formData)) {
       return;
     }
@@ -55,9 +34,7 @@ export class LoginPresenter {
     }
   }
 
-  async handleRegister() {
-    const formData = this.view.getRegisterFormData();
-
+  async handleRegister(formData) {
     if (!this.view.validateRegisterForm(formData)) {
       return;
     }

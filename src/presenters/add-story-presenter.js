@@ -20,10 +20,14 @@ export class AddStoryPresenter {
   checkAuthenticationStatus() {
     if (!authService.isLoggedIn()) {
       console.log("User not authenticated, allowing guest mode");
-      this.view.showGuestModeInfo();
+      if (this.view.showGuestModeInfo) {
+        this.view.showGuestModeInfo();
+      }
     } else {
       const user = authService.getCurrentUser();
-      this.view.showAuthenticatedUserInfo(user);
+      if (this.view.showAuthenticatedUserInfo) {
+        this.view.showAuthenticatedUserInfo(user);
+      }
     }
   }
 
@@ -327,7 +331,7 @@ export class AddStoryPresenter {
     };
 
     this.view.resetForm();
-    this.navigateToHome();
+    this.view.navigateToHome();
   }
 
   navigateToHome() {
@@ -351,7 +355,7 @@ export class AddStoryPresenter {
     };
 
     setTimeout(() => {
-      this.navigateToHome();
+      this.view.navigateToHome();
     }, 2000);
   }
 
@@ -392,7 +396,7 @@ export class AddStoryPresenter {
 
     if (shouldRedirectToLogin) {
       setTimeout(() => {
-        window.location.hash = "#/login";
+        this.view.navigateToLogin();
       }, 3000);
     }
   }

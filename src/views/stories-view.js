@@ -8,7 +8,6 @@ export class StoriesView {
     this.currentView = "grid";
     this.isMapReady = false;
 
-    // Callback registry untuk komunikasi dengan Presenter
     this.callbacks = {
       onRetryRequested: null,
       onRefreshRequested: null,
@@ -23,7 +22,6 @@ export class StoriesView {
     };
   }
 
-  // === CALLBACK REGISTRATION METHODS ===
   onRetryRequested(callback) {
     this.callbacks.onRetryRequested = callback;
   }
@@ -64,7 +62,6 @@ export class StoriesView {
     this.callbacks.onMapFullscreenToggled = callback;
   }
 
-  // === RENDER METHOD ===
   render() {
     return `
       <div class="stories-page">
@@ -156,7 +153,6 @@ export class StoriesView {
     `;
   }
 
-  // === INITIALIZATION ===
   async afterRender() {
     try {
       this.setupUIEventHandlers();
@@ -230,7 +226,6 @@ export class StoriesView {
   }
 
   setupRetryHandlers() {
-    // Event delegation untuk retry buttons
     document.addEventListener("click", (event) => {
       if (
         event.target.matches(".btn-retry") ||
@@ -260,7 +255,6 @@ export class StoriesView {
   }
 
   setupAccessibility() {
-    // Setup ARIA attributes dan screen reader support
     const container = document.getElementById("stories-container");
     if (container) {
       container.setAttribute("aria-live", "polite");
@@ -268,7 +262,6 @@ export class StoriesView {
     }
   }
 
-  // === UI STATE MANAGEMENT ===
   switchViewMode(viewMode) {
     this.currentView = viewMode;
 
@@ -297,7 +290,6 @@ export class StoriesView {
     this.announceToScreenReader(`Filter diubah ke ${filter}`);
   }
 
-  // === RENDERING METHODS ===
   renderStoriesList(storiesData) {
     console.log("🎨 Rendering stories list:", storiesData.length);
 
@@ -473,7 +465,6 @@ export class StoriesView {
     const container = document.getElementById("stories-container");
     if (!container) return;
 
-    // Single event listener dengan delegation
     container.addEventListener("click", (e) => {
       this.handleStoryInteraction(e);
     });
@@ -507,7 +498,6 @@ export class StoriesView {
         this.triggerStoryShareRequest(storyId);
         break;
       default:
-        // Click pada card area (bukan pada action buttons)
         if (
           !e.target.closest(".story-overlay") &&
           !e.target.closest(".story-actions")
@@ -528,7 +518,6 @@ export class StoriesView {
     }
   }
 
-  // === CALLBACK TRIGGER METHODS ===
   triggerStoryDetailRequest(storyId) {
     if (this.callbacks.onStoryDetailRequested) {
       this.callbacks.onStoryDetailRequested(storyId);
@@ -553,7 +542,6 @@ export class StoriesView {
     }
   }
 
-  // === UI INTERACTION METHODS ===
   handleLikeInteraction(btn) {
     if (!btn) return;
 
@@ -570,12 +558,10 @@ export class StoriesView {
       btn.classList.add("liked");
     }
 
-    // Visual feedback
     btn.style.transform = "scale(1.2)";
     setTimeout(() => (btn.style.transform = ""), 200);
   }
 
-  // === MAP METHODS ===
   async initializeMap() {
     try {
       const mapContainer = document.getElementById("stories-map");
@@ -689,7 +675,6 @@ export class StoriesView {
     this.markers = [];
   }
 
-  // === STATE DISPLAY METHODS ===
   showLoadingState() {
     const container = document.getElementById("stories-container");
     if (container) {
@@ -759,7 +744,6 @@ export class StoriesView {
     }
   }
 
-  // === UTILITY METHODS ===
   updateStats(storiesData) {
     const totalCount = document.getElementById("total-count");
     const locationCount = document.getElementById("location-count");
@@ -843,7 +827,6 @@ export class StoriesView {
 
     document.body.appendChild(modal);
 
-    // Setup event handlers
     const closeBtn = modal.querySelector(".modal-close");
     const backdrop = modal.querySelector(".modal-backdrop");
 
@@ -862,7 +845,6 @@ export class StoriesView {
       }
     });
 
-    // Trap focus in modal
     const focusableElements = modal.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
@@ -894,7 +876,6 @@ export class StoriesView {
     if (this.map && this.isMapReady) {
       this.map.setView([lat, lon], 15);
 
-      // Find and open popup for the story
       this.markers.forEach((marker) => {
         const markerLatLng = marker.getLatLng();
         if (
@@ -984,7 +965,6 @@ export class StoriesView {
     }, 1000);
   }
 
-  // === CLEANUP ===
   destroy() {
     this.clearMarkers();
     if (this.map) {

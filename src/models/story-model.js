@@ -54,6 +54,83 @@ export class StoryModel {
       throw new Error(error.message || "STORIES_FAILED_TO_GET");
     }
   }
+  validateAndSanitizeStories(stories) {
+    if (!Array.isArray(stories)) {
+      return [];
+    }
+
+    const validStories = stories
+      .filter((story) => this.isValidStory(story))
+      .map((story) => this.sanitizeStory(story));
+
+    return validStories;
+  }
+
+  isValidStory(story) {
+    if (!story || typeof story !== "object") {
+      return false;
+    }
+
+    const requiredFields = ["id", "photoUrl", "createdAt"];
+    const missingFields = requiredFields.filter((field) => !story[field]);
+
+    return missingFields.length === 0;
+  }
+
+  sanitizeStory(story) {
+    const sanitized = {
+      id: String(story.id).trim(),
+      name: this.sanitizeName(story.name),
+      description: this.sanitizeDescription(story.description),
+      photoUrl: String(story.photoUrl).trim(),
+      createdAt: story.createdAt,
+      lat: story.lat ? parseFloat(story.lat) : null,
+      lon: story.lon ? parseFloat(story.lon) : null,
+    };
+
+    if (
+      sanitized.lat !== null &&
+      (isNaN(sanitized.lat) || sanitized.lat < -90 || sanitized.lat > 90)
+    ) {
+      sanitized.lat = null;
+      sanitized.lon = null;
+    }
+
+    if (
+      sanitized.lon !== null &&
+      (isNaN(sanitized.lon) || sanitized.lon < -180 || sanitized.lon > 180)
+    ) {
+      sanitized.lat = null;
+      sanitized.lon = null;
+    }
+
+    return sanitized;
+  }
+
+  sanitizeName(name) {
+    if (!name || typeof name !== "string" || name.trim() === "") {
+      return "Anonymous User";
+    }
+    return (
+      name.trim().replace(/\s+/g, " ").replace(/[<>]/g, "").substring(0, 100) ||
+      "Anonymous User"
+    );
+  }
+
+  sanitizeDescription(description) {
+    if (
+      !description ||
+      typeof description !== "string" ||
+      description.trim() === ""
+    ) {
+      return "Tidak ada deskripsi tersedia.";
+    }
+    return description
+      .trim()
+      .replace(/\s+/g, " ")
+      .replace(/[<>]/g, "")
+      .substring(0, 1000);
+  }
 
   async getStoryDetail(id) {
     try {

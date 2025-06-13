@@ -3,6 +3,58 @@ export class LoginView {
     this.activeTab = "login";
     this.isLoading = false;
     this.formValidationEnabled = true;
+    this.callbacks = {
+      onLoginFormSubmit: null,
+      onRegisterFormSubmit: null,
+      onEscapePressed: null,
+    };
+  }
+
+  onLoginFormSubmit(callback) {
+    this.callbacks.onLoginFormSubmit = callback;
+  }
+
+  onRegisterFormSubmit(callback) {
+    this.callbacks.onRegisterFormSubmit = callback;
+  }
+
+  onEscapePressed(callback) {
+    this.callbacks.onEscapePressed = callback;
+  }
+
+  afterRender() {
+    this.setupTabSwitching();
+    this.setupPasswordToggle();
+    this.setupFormValidation();
+    this.setupAccessibility();
+    this.setupFormSubmission();
+  }
+
+  setupFormSubmission() {
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (this.callbacks.onLoginFormSubmit) {
+        const formData = this.getLoginFormData();
+        this.callbacks.onLoginFormSubmit(formData);
+      }
+    });
+
+    registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (this.callbacks.onRegisterFormSubmit) {
+        const formData = this.getRegisterFormData();
+        this.callbacks.onRegisterFormSubmit(formData);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && this.callbacks.onEscapePressed) {
+        this.callbacks.onEscapePressed();
+      }
+    });
   }
 
   render() {
