@@ -153,6 +153,7 @@ class App {
       }
     }
   }
+
   #setupSkipToContent() {
     const skipLink = document.getElementById("skip-to-content");
     const mainContent = document.getElementById("main-content");
@@ -206,9 +207,6 @@ class App {
       if (hashChangeTimeout) {
         clearTimeout(hashChangeTimeout);
       }
-
-      const oldUrl = event.oldURL?.split("#")[1] || "/";
-      const newUrl = window.location.hash.slice(1) || "/";
 
       hashChangeTimeout = setTimeout(async () => {
         try {
@@ -350,15 +348,6 @@ class App {
       mainContent.setAttribute("tabindex", "-1");
       mainContent.setAttribute("role", "main");
       mainContent.setAttribute("aria-label", "Konten utama halaman");
-    }
-
-    const skipLink = document.getElementById("skip-to-content");
-    if (skipLink) {
-      skipLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        mainContent.focus();
-        mainContent.scrollIntoView({ behavior: "smooth" });
-      });
     }
   }
 
