@@ -15,14 +15,33 @@ class App {
     this.#drawerButton = drawerButton;
     this.#navigationDrawer = navigationDrawer;
 
-    this.#setupSkipToContent();
-    this.#setupDrawer();
-    this.#setupViewTransitions();
-    this.#setupAuthListener();
-
-    setTimeout(() => {
+    // Wait for DOM to be ready before setting up
+    this.#waitForElements().then(() => {
+      this.#setupSkipToContent();
+      this.#setupDrawer();
+      this.#setupViewTransitions();
+      this.#setupAuthListener();
       this.#updateNavigation();
-    }, 100);
+    });
+  }
+
+  async #waitForElements() {
+    return new Promise((resolve) => {
+      const checkElements = () => {
+        const drawerButton = document.getElementById("drawer-button");
+        const navigationDrawer = document.getElementById("navigation-drawer");
+        const mainContent = document.getElementById("main-content");
+
+        if (drawerButton && navigationDrawer && mainContent) {
+          this.#drawerButton = drawerButton;
+          this.#navigationDrawer = navigationDrawer;
+          resolve();
+        } else {
+          setTimeout(checkElements, 50);
+        }
+      };
+      checkElements();
+    });
   }
 
   #setupAuthListener() {
@@ -71,6 +90,13 @@ class App {
   }
 
   #setupDrawer() {
+    // Check if elements exist before adding event listeners
+    if (!this.#drawerButton || !this.#navigationDrawer) {
+      console.warn("Drawer elements not found, retrying...");
+      setTimeout(() => this.#setupDrawer(), 100);
+      return;
+    }
+
     this.#drawerButton.addEventListener("click", () => {
       const isOpen = this.#navigationDrawer.classList.toggle("open");
       this.#drawerButton.setAttribute("aria-expanded", isOpen.toString());
@@ -99,8 +125,11 @@ class App {
       });
     }
 
+    // Body click handler with proper null checks
     document.body.addEventListener("click", (event) => {
       if (
+        this.#navigationDrawer &&
+        this.#drawerButton &&
         !this.#navigationDrawer.contains(event.target) &&
         !this.#drawerButton.contains(event.target)
       ) {
@@ -111,27 +140,34 @@ class App {
     document.addEventListener("keydown", (event) => {
       if (
         event.key === "Escape" &&
+        this.#navigationDrawer &&
         this.#navigationDrawer.classList.contains("open")
       ) {
         this.#closeDrawer();
-        this.#drawerButton.focus();
+        if (this.#drawerButton) {
+          this.#drawerButton.focus();
+        }
       }
     });
 
-    this.#navigationDrawer.addEventListener("keydown", (event) => {
-      if (event.key === "Tab") {
-        this.#handleMenuTabNavigation(event);
-      }
-    });
+    if (this.#navigationDrawer) {
+      this.#navigationDrawer.addEventListener("keydown", (event) => {
+        if (event.key === "Tab") {
+          this.#handleMenuTabNavigation(event);
+        }
+      });
 
-    this.#navigationDrawer.addEventListener("click", (event) => {
-      if (event.target.closest("a")) {
-        this.#closeDrawer();
-      }
-    });
+      this.#navigationDrawer.addEventListener("click", (event) => {
+        if (event.target.closest("a")) {
+          this.#closeDrawer();
+        }
+      });
+    }
   }
 
   #handleMenuTabNavigation(event) {
+    if (!this.#navigationDrawer) return;
+
     const menuItems =
       this.#navigationDrawer.querySelectorAll('[role="menuitem"]');
     const firstMenuItem = menuItems[0];
@@ -149,7 +185,7 @@ class App {
         document.activeElement === navCloseBtn
       ) {
         event.preventDefault();
-        firstMenuItem.focus();
+        if (firstMenuItem) firstMenuItem.focus();
       }
     }
   }
@@ -179,16 +215,21 @@ class App {
           { once: true }
         );
       });
+
       skipLink.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           skipLink.click();
         }
       });
+    } else {
+      console.warn("Skip link or main content elements not found");
     }
   }
 
   #closeDrawer() {
+    if (!this.#navigationDrawer || !this.#drawerButton) return;
+
     this.#navigationDrawer.classList.remove("open");
     this.#drawerButton.setAttribute("aria-expanded", "false");
     this.#navigationDrawer.setAttribute("aria-hidden", "true");
@@ -298,20 +339,24 @@ class App {
         return;
       }
 
-      this.#content.innerHTML = `
-        <div class="loading-container" 
-             style="min-height: 200px; display: flex; align-items: center; justify-content: center;"
-             role="status"
-             aria-label="Memuat halaman">
-          <div class="loading-spinner" aria-hidden="true"></div>
-          <p style="margin-left: 15px;">Memuat halaman...</p>
-        </div>
-      `;
+      if (this.#content) {
+        this.#content.innerHTML = `
+          <div class="loading-container" 
+               style="min-height: 200px; display: flex; align-items: center; justify-content: center;"
+               role="status"
+               aria-label="Memuat halaman">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p style="margin-left: 15px;">Memuat halaman...</p>
+          </div>
+        `;
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const htmlContent = await page.render();
-      this.#content.innerHTML = htmlContent;
+      if (this.#content) {
+        this.#content.innerHTML = htmlContent;
+      }
       this.#currentPage = page;
 
       if (page.afterRender) {
@@ -342,16 +387,29 @@ class App {
   }
 
   #updatePageAccessibility() {
-    const mainContent = this.#content;
+    if (!this.#content) return;
 
-    if (mainContent) {
-      mainContent.setAttribute("tabindex", "-1");
-      mainContent.setAttribute("role", "main");
-      mainContent.setAttribute("aria-label", "Konten utama halaman");
+    this.#content.setAttribute("tabindex", "-1");
+    this.#content.setAttribute("role", "main");
+    this.#content.setAttribute("aria-label", "Konten utama halaman");
+
+    const skipLink = document.getElementById("skip-to-content");
+    if (skipLink) {
+      const handleSkipClick = (e) => {
+        e.preventDefault();
+        this.#content.focus();
+        this.#content.scrollIntoView({ behavior: "smooth" });
+      };
+
+      // Remove existing listener to avoid duplicates
+      skipLink.removeEventListener("click", handleSkipClick);
+      skipLink.addEventListener("click", handleSkipClick);
     }
   }
 
   #focusMainHeading() {
+    if (!this.#content) return;
+
     setTimeout(() => {
       const headings = this.#content.querySelectorAll(
         "h1, h2, [role='heading']"
@@ -407,6 +465,8 @@ class App {
   }
 
   #showNotFound() {
+    if (!this.#content) return;
+
     this.#content.innerHTML = `
       <div class="error-container" role="alert" aria-live="assertive">
         <h1>404 - Halaman Tidak Ditemukan</h1>
@@ -417,6 +477,8 @@ class App {
   }
 
   #showPageError() {
+    if (!this.#content) return;
+
     this.#content.innerHTML = `
       <div class="error-container" role="alert" aria-live="assertive">
         <h1>Terjadi Kesalahan</h1>
