@@ -38,17 +38,15 @@ export class StoriesPresenter {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       const rawStories = await this.model.getAllStories();
-      const validatedStories =
-        this.model.validateAndSanitizeStories(rawStories);
-      this.currentStories = validatedStories;
+      this.currentStories = rawStories;
 
-      if (!validatedStories || validatedStories.length === 0) {
+      if (!rawStories || rawStories.length === 0) {
         this.view.showEmptyState();
       } else {
         this.displayStories();
       }
     } catch (error) {
-      console.error("❌ Error loading stories:", error);
+      console.error("Error loading stories:", error);
       this.handleLoadError(error);
     }
   }
@@ -74,14 +72,6 @@ export class StoriesPresenter {
 
   getStoriesWithLocation(stories) {
     return stories.filter((story) => story.lat && story.lon);
-  }
-
-  calculateStats(stories) {
-    return {
-      total: stories.length,
-      withLocation: this.getStoriesWithLocation(stories).length,
-      uniqueAuthors: new Set(stories.map((story) => story.name)).size,
-    };
   }
 
   async handleRetry() {

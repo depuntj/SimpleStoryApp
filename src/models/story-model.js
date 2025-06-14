@@ -31,8 +31,11 @@ export class StoryModel {
       const response = await getAllStories(requestOptions);
 
       if (response.error === false && response.listStory) {
-        this.stories = response.listStory;
-        return this.stories;
+        const validatedStories = this.validateAndSanitizeStories(
+          response.listStory
+        );
+        this.stories = validatedStories;
+        return validatedStories;
       } else {
         throw new Error("STORIES_FAILED_TO_GET");
       }
@@ -54,6 +57,7 @@ export class StoryModel {
       throw new Error(error.message || "STORIES_FAILED_TO_GET");
     }
   }
+
   validateAndSanitizeStories(stories) {
     if (!Array.isArray(stories)) {
       return [];

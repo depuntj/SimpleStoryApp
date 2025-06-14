@@ -55,10 +55,12 @@
     <script type="module" src="/scripts/index.js"></script>
   </head>
   <body>
-    <a href="#main-content" class="skip-link" id="skip-to-content">
-      <i class="fas fa-arrow-down" aria-hidden="true"></i>
-      Lewati ke konten utama
-    </a>
+    <div class="skip-links">
+      <a href="#main-content" class="skip-link" id="skip-to-content">
+        <i class="fas fa-arrow-down" aria-hidden="true"></i>
+        Lewati ke konten utama
+      </a>
+    </div>
 
     <header role="banner" id="site-header">
       <div class="main-header container">
@@ -227,9 +229,99 @@
 
         setTimeout(removeToast, duration);
       };
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const skipLink = document.getElementById("skip-to-content");
+        const mainContent = document.getElementById("main-content");
+
+        if (skipLink && mainContent) {
+          skipLink.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            mainContent.setAttribute("tabindex", "-1");
+            mainContent.focus();
+
+            mainContent.addEventListener(
+              "blur",
+              function () {
+                mainContent.removeAttribute("tabindex");
+              },
+              { once: true }
+            );
+
+            const liveRegion = document.createElement("div");
+            liveRegion.setAttribute("aria-live", "polite");
+            liveRegion.className = "sr-only";
+            liveRegion.textContent = "Langsung ke konten utama";
+            document.body.appendChild(liveRegion);
+
+            setTimeout(() => {
+              if (document.body.contains(liveRegion)) {
+                document.body.removeChild(liveRegion);
+              }
+            }, 1000);
+          });
+
+          skipLink.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              skipLink.click();
+            }
+          });
+        }
+      });
     </script>
 
     <style>
+      .skip-links {
+        position: relative;
+        z-index: 10000;
+      }
+
+      .skip-link {
+        position: absolute;
+        top: -40px;
+        left: 6px;
+        background: var(--bg-primary);
+        color: var(--primary);
+        padding: 12px 16px;
+        text-decoration: none;
+        z-index: 10000;
+        border-radius: var(--radius);
+        font-weight: 600;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease;
+        border: 2px solid var(--primary);
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+        top: 6px;
+        outline: 3px solid var(--warning);
+        outline-offset: 2px;
+      }
+
+      .skip-link:focus-visible {
+        outline: 3px solid var(--warning);
+      }
+
+      .skip-link:hover:focus {
+        background: var(--primary);
+        color: var(--text-white);
+        transform: translateY(0) scale(1.05);
+      }
+
+      #main-content:focus {
+        outline: 2px solid var(--primary);
+        outline-offset: -2px;
+      }
+
       .nav-header {
         display: flex;
         justify-content: space-between;
@@ -361,6 +453,18 @@
       }
 
       @media (max-width: 768px) {
+        .skip-link {
+          left: 12px;
+          right: 12px;
+          text-align: center;
+          padding: 10px 12px;
+          font-size: 0.85rem;
+        }
+
+        .skip-link:focus {
+          top: 12px;
+        }
+
         .toast-container {
           right: 12px;
           left: 12px;
@@ -368,6 +472,19 @@
 
         .toast {
           min-width: auto;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .skip-link {
+          left: 8px;
+          right: 8px;
+          padding: 8px 10px;
+          font-size: 0.8rem;
+        }
+
+        .skip-link:focus {
+          top: 8px;
         }
       }
     </style>

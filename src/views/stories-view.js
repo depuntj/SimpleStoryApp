@@ -65,7 +65,7 @@ export class StoriesView {
   render() {
     return `
       <div class="stories-page">
-        <div class="stories-hero">
+        <header class="stories-hero">
           <div class="hero-content">
             <h1 class="hero-title">
               <i class="fas fa-book-open" aria-hidden="true"></i>
@@ -75,80 +75,111 @@ export class StoriesView {
           </div>
           <div class="hero-actions">
             <a href="#/add" class="btn-add-story" aria-label="Buat story baru">
-              <i class="fas fa-plus"></i>
+              <i class="fas fa-plus" aria-hidden="true"></i>
               <span>Buat Story</span>
             </a>
           </div>
-        </div>
+        </header>
 
-        <div class="stories-container">
-          <div class="stories-toolbar">
+        <main class="stories-container">
+          <section class="stories-toolbar">
             <div class="toolbar-left">
-              <div class="view-switcher" role="group" aria-label="Mode tampilan">
-                <button class="view-btn active" data-view="grid" aria-label="Tampilan grid">
-                  <i class="fas fa-th"></i>
-                </button>
-                <button class="view-btn" data-view="list" aria-label="Tampilan list">
-                  <i class="fas fa-list"></i>
-                </button>
-              </div>
+              <fieldset class="view-switcher" role="group" aria-labelledby="view-mode-legend">
+                <legend id="view-mode-legend" class="sr-only">Mode tampilan stories</legend>
+                <label class="view-btn-label">
+                  <input type="radio" name="view-mode" value="grid" class="sr-only" checked>
+                  <button class="view-btn active" data-view="grid" aria-label="Tampilan grid" type="button">
+                    <i class="fas fa-th" aria-hidden="true"></i>
+                  </button>
+                </label>
+                <label class="view-btn-label">
+                  <input type="radio" name="view-mode" value="list" class="sr-only">
+                  <button class="view-btn" data-view="list" aria-label="Tampilan list" type="button">
+                    <i class="fas fa-list" aria-hidden="true"></i>
+                  </button>
+                </label>
+              </fieldset>
               
-              <div class="filter-tabs" role="group" aria-label="Filter stories">
-                <button class="filter-tab active" data-filter="all">
-                  <i class="fas fa-globe"></i>
-                  <span>Semua</span>
-                </button>
-                <button class="filter-tab" data-filter="location">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <span>Berlokasi</span>
-                </button>
-              </div>
+              <fieldset class="filter-tabs" role="group" aria-labelledby="filter-legend">
+                <legend id="filter-legend" class="sr-only">Filter stories</legend>
+                <label class="filter-tab-label">
+                  <input type="radio" name="story-filter" value="all" class="sr-only" checked>
+                  <button class="filter-tab active" data-filter="all" type="button">
+                    <i class="fas fa-globe" aria-hidden="true"></i>
+                    <span>Semua</span>
+                  </button>
+                </label>
+                <label class="filter-tab-label">
+                  <input type="radio" name="story-filter" value="location" class="sr-only">
+                  <button class="filter-tab" data-filter="location" type="button">
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                    <span>Berlokasi</span>
+                  </button>
+                </label>
+              </fieldset>
             </div>
 
-            <div class="toolbar-right">
-              <div class="stories-stats" id="stories-stats" aria-label="Statistik stories">
+            <aside class="toolbar-right">
+              <div class="stories-stats" id="stories-stats" aria-labelledby="stats-heading">
+                <h2 id="stats-heading" class="sr-only">Statistik Stories</h2>
                 <div class="stat-item">
-                  <span class="stat-number" id="total-count">0</span>
-                  <span class="stat-label">Stories</span>
+                  <span class="stat-number" id="total-count" aria-labelledby="total-label">0</span>
+                  <span id="total-label" class="stat-label">Stories</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-number" id="location-count">0</span>
-                  <span class="stat-label">Berlokasi</span>
+                  <span class="stat-number" id="location-count" aria-labelledby="location-label">0</span>
+                  <span id="location-label" class="stat-label">Berlokasi</span>
                 </div>
               </div>
-            </div>
-          </div>
+            </aside>
+          </section>
 
           <div class="stories-content">
-            <div class="stories-grid-container">
-              <div id="stories-container" class="stories-grid" role="main" aria-label="Daftar stories">
-                <!-- Stories akan dirender di sini -->
+            <section class="stories-grid-container">
+              <h2 class="sr-only">Daftar Stories</h2>
+              <div id="stories-container" class="stories-grid" role="feed" aria-labelledby="stories-heading" aria-busy="false">
+                <h3 id="stories-heading" class="sr-only">Stories dari komunitas</h3>
               </div>
-            </div>
+            </section>
 
-            <div class="stories-map-container">
-              <div class="map-header">
-                <h2>
-                  <i class="fas fa-map"></i>
+            <aside class="stories-map-container">
+              <header class="map-header">
+                <h2 id="map-heading">
+                  <i class="fas fa-map" aria-hidden="true"></i>
                   Peta Stories
                 </h2>
-                <div class="map-controls">
-                  <button class="map-btn" id="center-map" title="Pusatkan peta" aria-label="Pusatkan peta">
-                    <i class="fas fa-crosshairs"></i>
+                <div class="map-controls" role="toolbar" aria-label="Kontrol peta">
+                  <button class="map-btn" id="center-map" 
+                          title="Pusatkan peta ke semua marker" 
+                          aria-label="Pusatkan peta ke semua marker"
+                          type="button">
+                    <i class="fas fa-crosshairs" aria-hidden="true"></i>
                   </button>
-                  <button class="map-btn" id="fullscreen-map" title="Layar penuh" aria-label="Mode layar penuh">
-                    <i class="fas fa-expand"></i>
+                  <button class="map-btn" id="fullscreen-map" 
+                          title="Toggle mode layar penuh" 
+                          aria-label="Toggle mode layar penuh"
+                          type="button">
+                    <i class="fas fa-expand" aria-hidden="true"></i>
                   </button>
                 </div>
+              </header>
+              <div id="stories-map" 
+                   class="stories-map" 
+                   role="img" 
+                   aria-labelledby="map-heading"
+                   aria-describedby="map-description">
               </div>
-              <div id="stories-map" class="stories-map" role="img" aria-label="Peta interaktif lokasi stories"></div>
-              <div class="map-info" id="map-info">
-                <i class="fas fa-info-circle"></i>
+              <div id="map-description" class="sr-only">
+                Peta interaktif menampilkan lokasi stories yang memiliki koordinat geografis. 
+                Klik pada marker untuk melihat detail story.
+              </div>
+              <footer class="map-info" id="map-info" aria-live="polite">
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
                 <span>Klik marker untuk melihat detail story</span>
-              </div>
-            </div>
+              </footer>
+            </aside>
           </div>
-        </div>
+        </main>
       </div>
     `;
   }
@@ -174,11 +205,14 @@ export class StoriesView {
 
   setupViewSwitcher() {
     const viewBtns = document.querySelectorAll(".view-btn");
+    const radioInputs = document.querySelectorAll('input[name="view-mode"]');
 
-    viewBtns.forEach((btn) => {
+    viewBtns.forEach((btn, index) => {
       btn.addEventListener("click", () => {
         const view = btn.dataset.view;
         this.switchViewMode(view);
+
+        radioInputs[index].checked = true;
 
         if (this.callbacks.onViewModeChanged) {
           this.callbacks.onViewModeChanged(view);
@@ -189,11 +223,14 @@ export class StoriesView {
 
   setupFilterTabs() {
     const filterTabs = document.querySelectorAll(".filter-tab");
+    const radioInputs = document.querySelectorAll('input[name="story-filter"]');
 
-    filterTabs.forEach((tab) => {
+    filterTabs.forEach((tab, index) => {
       tab.addEventListener("click", () => {
         const filter = tab.dataset.filter;
         this.switchFilter(filter);
+
+        radioInputs[index].checked = true;
 
         if (this.callbacks.onFilterChanged) {
           this.callbacks.onFilterChanged(filter);
@@ -260,6 +297,16 @@ export class StoriesView {
       container.setAttribute("aria-live", "polite");
       container.setAttribute("aria-busy", "false");
     }
+
+    const viewBtns = document.querySelectorAll(".view-btn");
+    viewBtns.forEach((btn) => {
+      btn.setAttribute("role", "tab");
+    });
+
+    const filterTabs = document.querySelectorAll(".filter-tab");
+    filterTabs.forEach((tab) => {
+      tab.setAttribute("role", "tab");
+    });
   }
 
   switchViewMode(viewMode) {
@@ -270,6 +317,7 @@ export class StoriesView {
 
     viewBtns.forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.view === viewMode);
+      btn.setAttribute("aria-selected", btn.dataset.view === viewMode);
     });
 
     if (container) {
@@ -285,6 +333,7 @@ export class StoriesView {
     const filterTabs = document.querySelectorAll(".filter-tab");
     filterTabs.forEach((tab) => {
       tab.classList.toggle("active", tab.dataset.filter === filter);
+      tab.setAttribute("aria-selected", tab.dataset.filter === filter);
     });
 
     this.announceToScreenReader(`Filter diubah ke ${filter}`);
@@ -348,16 +397,15 @@ export class StoriesView {
                aria-labelledby="story-title-${index}"
                aria-describedby="story-desc-${index} story-meta-${index}">
         
-        <header class="story-image" role="img" aria-label="Gambar story">
+        <figure class="story-image">
           <img src="${photoUrl}" 
                alt="${imageAltText}" 
                loading="lazy"
-               role="img"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.nextElementSibling.setAttribute('role', 'img'); this.nextElementSibling.setAttribute('aria-label', 'Gambar tidak tersedia untuk story ${storyName}');">
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
           <div class="image-placeholder" 
                style="display: none;"
                role="img"
-               aria-label="Gambar tidak tersedia">
+               aria-label="Gambar tidak tersedia untuk story ${storyName}">
             <i class="fas fa-image" aria-hidden="true"></i>
             <span>Gambar tidak tersedia</span>
           </div>
@@ -391,9 +439,9 @@ export class StoriesView {
             <div class="author-info">
               <div class="author-avatar" 
                    role="img" 
-                   aria-label="Avatar ${storyName}"
-                   title="Avatar ${storyName}">
-                <span class="avatar-text" aria-hidden="true">
+                   aria-label="Foto profil ${storyName}"
+                   title="${storyName}">
+                <span aria-hidden="true">
                   ${storyName.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -552,10 +600,12 @@ export class StoriesView {
       icon.className = "far fa-heart";
       btn.dataset.liked = "false";
       btn.classList.remove("liked");
+      btn.setAttribute("aria-pressed", "false");
     } else {
       icon.className = "fas fa-heart";
       btn.dataset.liked = "true";
       btn.classList.add("liked");
+      btn.setAttribute("aria-pressed", "true");
     }
 
     btn.style.transform = "scale(1.2)";
@@ -627,17 +677,31 @@ export class StoriesView {
   }
 
   createMapPopupContent(story) {
-    return `
-      <div class="map-popup">
-        <img src="${story.photoUrl}" alt="Story ${
+    const altText = `Foto story dari ${
       story.name
-    }" class="popup-image">
+    }: ${story.description.substring(0, 50)}${
+      story.description.length > 50 ? "..." : ""
+    }`;
+
+    return `
+      <article class="map-popup">
+        <figure class="popup-image-container">
+          <img src="${story.photoUrl}" 
+               alt="${altText}" 
+               class="popup-image"
+               loading="lazy"
+               onerror="this.style.display='none'; this.alt='Gambar tidak dapat dimuat';">
+        </figure>
         <div class="popup-content">
           <h4>${story.name}</h4>
-          <p>${story.description.substring(0, 80)}...</p>
-          <small>${this.formatRelativeTime(story.createdAt)}</small>
+          <p>${story.description.substring(0, 80)}${
+      story.description.length > 80 ? "..." : ""
+    }</p>
+          <time datetime="${story.createdAt}">
+            ${this.formatRelativeTime(story.createdAt)}
+          </time>
         </div>
-      </div>
+      </article>
     `;
   }
 
@@ -656,10 +720,12 @@ export class StoriesView {
     if (container?.classList.contains("fullscreen")) {
       container.classList.remove("fullscreen");
       if (icon) icon.className = "fas fa-expand";
+      btn?.setAttribute("aria-label", "Masuk mode layar penuh");
       document.body.style.overflow = "";
     } else {
       container?.classList.add("fullscreen");
       if (icon) icon.className = "fas fa-compress";
+      btn?.setAttribute("aria-label", "Keluar dari mode layar penuh");
       document.body.style.overflow = "hidden";
     }
 
@@ -680,8 +746,8 @@ export class StoriesView {
     if (container) {
       container.setAttribute("aria-busy", "true");
       container.innerHTML = `
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
+        <div class="loading-state" role="status" aria-label="Memuat stories">
+          <div class="loading-spinner" aria-hidden="true"></div>
           <p>Memuat stories...</p>
         </div>
       `;
@@ -693,12 +759,12 @@ export class StoriesView {
     if (container) {
       container.setAttribute("aria-busy", "false");
       container.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-images"></i>
+        <div class="empty-state" role="status">
+          <i class="fas fa-images" aria-hidden="true"></i>
           <h3>Belum Ada Stories</h3>
           <p>Jadilah yang pertama berbagi cerita!</p>
           <a href="#/add" class="btn-add-first">
-            <i class="fas fa-plus"></i>
+            <i class="fas fa-plus" aria-hidden="true"></i>
             Buat Story Pertama
           </a>
         </div>
@@ -711,12 +777,12 @@ export class StoriesView {
     if (container) {
       container.setAttribute("aria-busy", "false");
       container.innerHTML = `
-        <div class="error-state">
-          <i class="fas fa-exclamation-triangle"></i>
+        <div class="error-state" role="alert">
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
           <h3>Terjadi Kesalahan</h3>
           <p>${message}</p>
           <button class="btn-retry" type="button">
-            <i class="fas fa-redo"></i>
+            <i class="fas fa-redo" aria-hidden="true"></i>
             Coba Lagi
           </button>
         </div>
@@ -736,8 +802,8 @@ export class StoriesView {
     const mapContainer = document.getElementById("stories-map");
     if (mapContainer) {
       mapContainer.innerHTML = `
-        <div class="map-error">
-          <i class="fas fa-map"></i>
+        <div class="map-error" role="alert">
+          <i class="fas fa-map" aria-hidden="true"></i>
           <p>Peta tidak dapat dimuat</p>
         </div>
       `;
@@ -783,23 +849,31 @@ export class StoriesView {
     modal.innerHTML = `
       <div class="modal-backdrop" aria-hidden="true"></div>
       <div class="modal-content">
-        <div class="modal-header">
+        <header class="modal-header">
           <h2 id="modal-title">Story dari ${story.name}</h2>
           <button class="modal-close" 
                   aria-label="Tutup modal" 
                   type="button">
             <i class="fas fa-times" aria-hidden="true"></i>
           </button>
-        </div>
-        <div class="modal-body">
-          <img src="${story.photoUrl}" 
-               alt="Foto story oleh ${story.name}" 
-               class="modal-image"
-               role="img">
+        </header>
+        <main class="modal-body">
+          <figure class="modal-image-container">
+            <img src="${story.photoUrl}" 
+                 alt="Foto story: ${
+                   story.description.length > 100
+                     ? story.description.substring(0, 100) + "..."
+                     : story.description
+                 }. Dibagikan oleh ${story.name}" 
+                 class="modal-image">
+            <figcaption class="sr-only">
+              Story dari ${story.name}: ${story.description}
+            </figcaption>
+          </figure>
           <div id="modal-description" class="modal-description">
             ${story.description}
           </div>
-          <div class="modal-meta">
+          <footer class="modal-meta">
             <div class="meta-item">
               <i class="fas fa-user" aria-hidden="true"></i>
               <span>Oleh: ${story.name}</span>
@@ -820,8 +894,8 @@ export class StoriesView {
             `
                 : ""
             }
-          </div>
-        </div>
+          </footer>
+        </main>
       </div>
     `;
 

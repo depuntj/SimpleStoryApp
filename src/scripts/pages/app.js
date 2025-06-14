@@ -18,91 +18,10 @@ class App {
     this.#setupDrawer();
     this.#setupViewTransitions();
     this.#setupAuthListener();
-    this.#setupSkipToContent();
 
     setTimeout(() => {
       this.#updateNavigation();
     }, 100);
-  }
-
-  #setupSkipToContent() {
-    const skipLink = document.getElementById("skip-to-content");
-
-    if (skipLink) {
-      skipLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.#focusMainContent();
-      });
-
-      skipLink.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          this.#focusMainContent();
-        }
-      });
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (
-        e.key === "Tab" &&
-        !e.shiftKey &&
-        document.activeElement === document.body
-      ) {
-        const skipLink = document.getElementById("skip-to-content");
-        if (skipLink) {
-          skipLink.focus();
-        }
-      }
-    });
-  }
-
-  #focusMainContent() {
-    const mainContent = document.getElementById("main-content");
-
-    if (mainContent) {
-      mainContent.setAttribute("tabindex", "-1");
-      mainContent.focus();
-      mainContent.addEventListener(
-        "blur",
-        () => {
-          mainContent.removeAttribute("tabindex");
-        },
-        { once: true }
-      );
-
-      this.#announceToScreenReader("Langsung ke konten utama");
-    }
-    const primaryHeading = mainContent?.querySelector("h1, h2");
-    if (primaryHeading) {
-      setTimeout(() => {
-        primaryHeading.focus();
-        primaryHeading.setAttribute("tabindex", "-1");
-
-        primaryHeading.addEventListener(
-          "blur",
-          () => {
-            primaryHeading.removeAttribute("tabindex");
-          },
-          { once: true }
-        );
-      }, 100);
-    }
-  }
-
-  #announceToScreenReader(message) {
-    const announcement = document.createElement("div");
-    announcement.setAttribute("aria-live", "polite");
-    announcement.setAttribute("aria-atomic", "true");
-    announcement.className = "sr-only";
-    announcement.textContent = message;
-
-    document.body.appendChild(announcement);
-
-    setTimeout(() => {
-      if (document.body.contains(announcement)) {
-        document.body.removeChild(announcement);
-      }
-    }, 1000);
   }
 
   #setupAuthListener() {
@@ -379,6 +298,7 @@ class App {
       this.#lastRenderedUrl = url;
 
       this.#announcePageChange(url);
+      this.#focusMainHeading();
 
       console.log("Page rendered successfully:", url);
     } catch (error) {
@@ -394,17 +314,25 @@ class App {
 
     if (mainContent) {
       mainContent.setAttribute("tabindex", "-1");
+    }
+  }
 
-      const pageHeading = mainContent.querySelector("h1");
-      if (pageHeading) {
-        pageHeading.setAttribute("tabindex", "-1");
+  #focusMainHeading() {
+    setTimeout(() => {
+      const heading = this.#content.querySelector("h1, h2");
+      if (heading) {
+        heading.setAttribute("tabindex", "-1");
+        heading.focus();
+
+        heading.addEventListener(
+          "blur",
+          () => {
+            heading.removeAttribute("tabindex");
+          },
+          { once: true }
+        );
       }
-    }
-
-    const skipLink = document.getElementById("skip-to-content");
-    if (skipLink) {
-      skipLink.removeAttribute("aria-hidden");
-    }
+    }, 100);
   }
 
   #announcePageChange(url) {
@@ -417,6 +345,22 @@ class App {
 
     const announcement = pageTitles[url] || "Halaman baru dimuat";
     this.#announceToScreenReader(announcement);
+  }
+
+  #announceToScreenReader(message) {
+    const announcement = document.createElement("div");
+    announcement.setAttribute("aria-live", "polite");
+    announcement.setAttribute("aria-atomic", "true");
+    announcement.className = "sr-only";
+    announcement.textContent = message;
+
+    document.body.appendChild(announcement);
+
+    setTimeout(() => {
+      if (document.body.contains(announcement)) {
+        document.body.removeChild(announcement);
+      }
+    }, 1000);
   }
 
   #showNotFound() {
