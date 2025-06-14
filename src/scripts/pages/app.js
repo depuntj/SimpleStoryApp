@@ -15,6 +15,7 @@ class App {
     this.#drawerButton = drawerButton;
     this.#navigationDrawer = navigationDrawer;
 
+    this.#setupSkipToContent();
     this.#setupDrawer();
     this.#setupViewTransitions();
     this.#setupAuthListener();
@@ -150,6 +151,39 @@ class App {
         event.preventDefault();
         firstMenuItem.focus();
       }
+    }
+  }
+  #setupSkipToContent() {
+    const skipLink = document.getElementById("skip-to-content");
+    const mainContent = document.getElementById("main-content");
+
+    if (skipLink && mainContent) {
+      skipLink.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        mainContent.setAttribute("tabindex", "-1");
+        mainContent.focus();
+
+        mainContent.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+
+        this.#announceToScreenReader("Berpindah ke konten utama");
+        mainContent.addEventListener(
+          "blur",
+          () => {
+            mainContent.removeAttribute("tabindex");
+          },
+          { once: true }
+        );
+      });
+      skipLink.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          skipLink.click();
+        }
+      });
     }
   }
 
@@ -314,25 +348,45 @@ class App {
 
     if (mainContent) {
       mainContent.setAttribute("tabindex", "-1");
+      mainContent.setAttribute("role", "main");
+      mainContent.setAttribute("aria-label", "Konten utama halaman");
+    }
+
+    const skipLink = document.getElementById("skip-to-content");
+    if (skipLink) {
+      skipLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        mainContent.focus();
+        mainContent.scrollIntoView({ behavior: "smooth" });
+      });
     }
   }
 
   #focusMainHeading() {
     setTimeout(() => {
-      const heading = this.#content.querySelector("h1, h2");
-      if (heading) {
-        heading.setAttribute("tabindex", "-1");
-        heading.focus();
+      const headings = this.#content.querySelectorAll(
+        "h1, h2, [role='heading']"
+      );
+      const mainHeading = headings[0];
 
-        heading.addEventListener(
+      if (mainHeading) {
+        mainHeading.setAttribute("tabindex", "-1");
+        mainHeading.focus();
+
+        const headingText = mainHeading.textContent || mainHeading.innerText;
+        this.#announceToScreenReader(`Halaman: ${headingText}`);
+
+        mainHeading.addEventListener(
           "blur",
           () => {
-            heading.removeAttribute("tabindex");
+            mainHeading.removeAttribute("tabindex");
           },
           { once: true }
         );
+      } else {
+        this.#content.focus();
       }
-    }, 100);
+    }, 150);
   }
 
   #announcePageChange(url) {
