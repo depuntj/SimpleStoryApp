@@ -70,15 +70,13 @@
     <!-- Header berada di dalam elemen header -->
     <header role="banner" id="site-header" aria-label="Header situs utama">
       <div class="main-header container">
-        <!-- H1 hanya ada satu dan sebagai judul utama halaman -->
-        <h1 class="brand-name">
+        <!-- UBAH: Hapus H1, gunakan div untuk brand -->
+        <div class="brand-name">
           <a href="#/" aria-label="Beranda Dicoding Stories">
             <i class="fas fa-book-open" aria-hidden="true"></i>
             <span>Dicoding Stories</span>
           </a>
-        </h1>
-
-        <!-- Navigasi dengan struktur semantik yang benar -->
+        </div>
         <nav
           id="navigation-drawer"
           class="navigation-drawer"
@@ -87,7 +85,6 @@
           aria-hidden="true"
         >
           <header class="nav-header">
-            <!-- H2 untuk sub-judul navigasi -->
             <h2 class="nav-title">
               <i class="fas fa-compass" aria-hidden="true"></i>
               <span>Menu Navigasi</span>
@@ -108,22 +105,20 @@
             aria-label="Menu utama"
           >
             <li role="none">
-              <a href="#/" role="menuitem">
-                <i class="fas fa-home" aria-hidden="true"></i>
-                Beranda
-              </a>
+              <a href="#/" role="menuitem"
+                ><i class="fas fa-home" aria-hidden="true"></i>Beranda</a
+              >
             </li>
             <li role="none">
-              <a href="#/add" role="menuitem">
-                <i class="fas fa-plus-circle" aria-hidden="true"></i>
-                Tambah Story
-              </a>
+              <a href="#/add" role="menuitem"
+                ><i class="fas fa-plus-circle" aria-hidden="true"></i>Tambah
+                Story</a
+              >
             </li>
             <li role="none">
-              <a href="#/about" role="menuitem">
-                <i class="fas fa-info-circle" aria-hidden="true"></i>
-                Tentang
-              </a>
+              <a href="#/about" role="menuitem"
+                ><i class="fas fa-info-circle" aria-hidden="true"></i>Tentang</a
+              >
             </li>
           </ul>
         </nav>
@@ -143,7 +138,6 @@
       </div>
     </header>
 
-    <!-- Konten utama harus berada dalam elemen main -->
     <main
       id="main-content"
       class="main-content"

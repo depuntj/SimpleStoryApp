@@ -19,13 +19,16 @@ export class AddStoryView {
       <main class="add-story-page" role="main">
         <div class="add-story-container">
           <header class="story-header">
+            <!-- H1 UTAMA HALAMAN -->
             <h1 id="page-title">
               <i class="fas fa-plus-circle" aria-hidden="true"></i> 
               Buat Story Baru
             </h1>
             <p id="page-description">Bagikan momen spesial Anda dengan komunitas Dicoding</p>
           </header>
+          
           <section class="progress-section" aria-labelledby="progress-heading">
+            <!-- H2 untuk section progress -->
             <h2 id="progress-heading" class="sr-only">Progress pembuatan story</h2>
             <div class="progress-steps" 
                  role="progressbar" 
@@ -57,11 +60,14 @@ export class AddStoryView {
               </div>
             </div>
           </section>
+          
           <form id="add-story-form" class="story-form" novalidate aria-labelledby="page-title">
+            <!-- STEP 1: Deskripsi -->
             <fieldset class="form-step active" data-step="1">
               <legend class="sr-only">Langkah 1: Tulis deskripsi story</legend>
               <div class="step-content">
                 <header class="step-header">
+                  <!-- H2 untuk step utama -->
                   <h2 class="step-title" id="description-step-title">
                     <i class="fas fa-edit" aria-hidden="true"></i>
                     Ceritakan Pengalaman Anda
@@ -70,7 +76,7 @@ export class AddStoryView {
                     Tulis deskripsi yang menarik tentang momen yang ingin Anda bagikan
                   </p>
                 </header>
-  
+
                 <div class="form-group">
                   <label for="story-description" class="form-label">
                     <i class="fas fa-pen" aria-hidden="true"></i>
@@ -96,8 +102,9 @@ export class AddStoryView {
                   </div>
                   <div id="desc-error" class="field-error" role="alert" aria-live="polite"></div>
                 </div>
-  
+
                 <aside class="tips-card">
+                  <!-- H3 untuk sub-section tips -->
                   <h3>
                     <i class="fas fa-lightbulb" aria-hidden="true"></i>
                     Tips Menulis Deskripsi
@@ -116,317 +123,334 @@ export class AddStoryView {
                       Gunakan bahasa yang mudah dipahami dan ramah
                     </li>
                   </ul>
+                </aside>
+              </div>
+            </fieldset>
+
+            <!-- STEP 2: Kamera -->
+            <fieldset class="form-step" data-step="2">
+              <legend class="sr-only">Langkah 2: Ambil foto dengan kamera</legend>
+              <div class="step-content">
+                <header class="step-header">
+                  <!-- H2 untuk step kamera -->
+                  <h2 class="step-title" id="camera-step-title">
+                    <i class="fas fa-camera" aria-hidden="true"></i>
+                    Ambil Foto dengan Kamera
+                  </h2>
+                  <p class="step-description" id="camera-step-desc">
+                    Gunakan kamera perangkat untuk mengambil foto yang menarik
+                  </p>
+                </header>
+
+                <div class="camera-section" 
+                     role="group" 
+                     aria-labelledby="camera-step-title"
+                     aria-describedby="camera-step-desc camera-instructions">
+                  <div id="camera-instructions" class="sr-only">
+                    Bagian kamera untuk mengambil foto. Gunakan tombol aktifkan kamera untuk memulai, 
+                    kemudian tombol ambil foto untuk mengambil gambar.
+                  </div>
+
+                  <div class="camera-container">
+                    <div class="camera-viewport" 
+                         id="camera-viewport" 
+                         role="img" 
+                         aria-labelledby="camera-status"
+                         aria-describedby="camera-status-desc">
+                      <div id="camera-status" class="sr-only" aria-live="polite">
+                        Kamera belum aktif
+                      </div>
+                      <div id="camera-status-desc" class="sr-only">
+                        Status kamera dan preview foto akan ditampilkan di sini
+                      </div>
+                      <video id="camera-video" 
+                             class="camera-preview" 
+                             autoplay 
+                             playsinline 
+                             muted 
+                             style="display: none;"
+                             aria-label="Preview kamera langsung"
+                             aria-describedby="camera-video-desc">
+                      </video>
+                      <div id="camera-video-desc" class="sr-only">
+                        Video preview dari kamera perangkat Anda
+                      </div>
+                      <div id="camera-placeholder" class="camera-placeholder">
+                        <i class="fas fa-video" aria-hidden="true"></i>
+                        <!-- H3 untuk sub-section dalam camera -->
+                        <h3>Siap Mengambil Foto?</h3>
+                        <p>Aktifkan kamera untuk memulai</p>
+                        
+                        <button type="button" 
+                                id="start-camera-btn" 
+                                class="camera-button btn-camera-primary"
+                                aria-describedby="camera-start-help">
+                          <i class="fas fa-play" aria-hidden="true"></i> 
+                          Aktifkan Kamera
+                        </button>
+                        <div id="camera-start-help" class="sr-only">
+                          Klik untuk mengaktifkan kamera dan mulai mengambil foto
+                        </div>
+                      </div>
+                      <!-- Photo preview section dengan H4 -->
+                      <div id="photo-preview" 
+                           class="photo-preview" 
+                           style="display: none;"
+                           role="img"
+                           aria-labelledby="photo-preview-title">
+                        
+                        <h4 id="photo-preview-title" class="sr-only">Preview foto yang diambil</h4>
+                        <img id="captured-image" 
+                             alt="Foto yang berhasil diambil untuk story"
+                             aria-describedby="photo-preview-desc">
+                        <div id="photo-preview-desc" class="sr-only">
+                          Foto yang baru saja Anda ambil. Anda dapat menggunakan foto ini atau mengambil ulang.
+                        </div>
+                        
+                        <div class="photo-overlay">
+                          <button type="button" 
+                                  id="retake-btn" 
+                                  class="camera-button btn-camera-secondary"
+                                  aria-label="Ambil ulang foto"
+                                  aria-describedby="retake-help">
+                            <i class="fas fa-redo" aria-hidden="true"></i> 
+                            Ambil Ulang
+                          </button>
+                          <div id="retake-help" class="sr-only">
+                            Hapus foto saat ini dan ambil foto baru
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Camera controls -->
+                    <div class="camera-controls" 
+                         id="camera-controls" 
+                         style="display: none;" 
+                         role="toolbar" 
+                         aria-label="Kontrol kamera"
+                         aria-describedby="camera-controls-desc">
+                      
+                      <div id="camera-controls-desc" class="sr-only">
+                        Kontrol untuk mengambil foto atau menghentikan kamera
+                      </div>
+                      
+                      <button type="button" 
+                              id="capture-btn" 
+                              class="camera-button btn-camera-capture"
+                              aria-label="Ambil foto sekarang"
+                              aria-describedby="capture-help">
+                        <i class="fas fa-camera" aria-hidden="true"></i> 
+                        Ambil Foto
+                      </button>
+                      <div id="capture-help" class="sr-only">
+                        Ambil foto menggunakan kamera yang sedang aktif
+                      </div>
+                      
+                      <button type="button" 
+                              id="stop-camera-btn" 
+                              class="camera-button btn-camera-secondary"
+                              aria-label="Hentikan kamera"
+                              aria-describedby="stop-help">
+                        <i class="fas fa-stop" aria-hidden="true"></i> 
+                        Batal
+                      </button>
+                      <div id="stop-help" class="sr-only">
+                        Hentikan kamera dan kembali ke tampilan awal
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <aside class="camera-tips">
+                    <!-- H3 untuk tips kamera -->
+                    <h3>
+                      <i class="fas fa-camera" aria-hidden="true"></i>
+                      Tips Mengambil Foto
+                    </h3>
+                    <div class="tips-grid">
+                      <div class="tip-item">
+                        <i class="fas fa-sun" aria-hidden="true"></i>
+                        <span>Pastikan pencahayaan cukup</span>
+                      </div>
+                      <div class="tip-item">
+                        <i class="fas fa-hand-paper" aria-hidden="true"></i>
+                        <span>Pegang perangkat dengan stabil</span>
+                      </div>
+                      <div class="tip-item">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        <span>Fokus pada objek utama</span>
+                      </div>
+                      <div class="tip-item">
+                        <i class="fas fa-crop" aria-hidden="true"></i>
+                        <span>Komposisi yang menarik</span>
+                      </div>
+                    </div>
                   </aside>
                 </div>
-              </fieldset>
-              <fieldset class="form-step" data-step="2">
-                <legend class="sr-only">Langkah 2: Ambil foto dengan kamera</legend>
-                <div class="step-content">
-                  <header class="step-header">
-                    <h2 class="step-title" id="camera-step-title">
-                      <i class="fas fa-camera" aria-hidden="true"></i>
-                      Ambil Foto dengan Kamera
-                    </h2>
-                    <p class="step-description" id="camera-step-desc">
-                      Gunakan kamera perangkat untuk mengambil foto yang menarik
-                    </p>
-                  </header>
-  
-                  <div class="camera-section" 
-                       role="group" 
-                       aria-labelledby="camera-step-title"
-                       aria-describedby="camera-step-desc camera-instructions">
-                    <div id="camera-instructions" class="sr-only">
-                      Bagian kamera untuk mengambil foto. Gunakan tombol aktifkan kamera untuk memulai, 
-                      kemudian tombol ambil foto untuk mengambil gambar.
-                    </div>
-  
-                    <div class="camera-container">
-                      <div class="camera-viewport" 
-                           id="camera-viewport" 
-                           role="img" 
-                           aria-labelledby="camera-status"
-                           aria-describedby="camera-status-desc">
-                        <div id="camera-status" class="sr-only" aria-live="polite">
-                          Kamera belum aktif
-                        </div>
-                        <div id="camera-status-desc" class="sr-only">
-                          Status kamera dan preview foto akan ditampilkan di sini
-                        </div>
-                        <video id="camera-video" 
-                               class="camera-preview" 
-                               autoplay 
-                               playsinline 
-                               muted 
-                               style="display: none;"
-                               aria-label="Preview kamera langsung"
-                               aria-describedby="camera-video-desc">
-                        </video>
-                        <div id="camera-video-desc" class="sr-only">
-                          Video preview dari kamera perangkat Anda
-                        </div>
-                        <div id="camera-placeholder" class="camera-placeholder">
-                          <i class="fas fa-video" aria-hidden="true"></i>
-                          <h3>Siap Mengambil Foto?</h3>
-                          <p>Aktifkan kamera untuk memulai</p>
-                          
-                          <button type="button" 
-                                  id="start-camera-btn" 
-                                  class="camera-button btn-camera-primary"
-                                  aria-describedby="camera-start-help">
-                            <i class="fas fa-play" aria-hidden="true"></i> 
-                            Aktifkan Kamera
-                          </button>
-                          <div id="camera-start-help" class="sr-only">
-                            Klik untuk mengaktifkan kamera dan mulai mengambil foto
-                          </div>
-                        </div>
-                        <div id="photo-preview" 
-                             class="photo-preview" 
-                             style="display: none;"
-                             role="img"
-                             aria-labelledby="photo-preview-title">
-                          
-                          <h4 id="photo-preview-title" class="sr-only">Preview foto yang diambil</h4>
-                          <img id="captured-image" 
-                               alt="Foto yang berhasil diambil untuk story"
-                               aria-describedby="photo-preview-desc">
-                          <div id="photo-preview-desc" class="sr-only">
-                            Foto yang baru saja Anda ambil. Anda dapat menggunakan foto ini atau mengambil ulang.
-                          </div>
-                          
-                          <div class="photo-overlay">
-                            <button type="button" 
-                                    id="retake-btn" 
-                                    class="camera-button btn-camera-secondary"
-                                    aria-label="Ambil ulang foto"
-                                    aria-describedby="retake-help">
-                              <i class="fas fa-redo" aria-hidden="true"></i> 
-                              Ambil Ulang
-                            </button>
-                            <div id="retake-help" class="sr-only">
-                              Hapus foto saat ini dan ambil foto baru
-                            </div>
-                          </div>
-                        </div>
+              </div>
+            </fieldset>
+
+            <!-- STEP 3: Lokasi -->
+            <fieldset class="form-step" data-step="3">
+              <legend class="sr-only">Langkah 3: Pilih lokasi (opsional)</legend>
+              <div class="step-content">
+                <header class="step-header">
+                  <!-- H2 untuk step lokasi -->
+                  <h2 class="step-title" id="location-step-title">
+                    <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                    Tandai Lokasi
+                  </h2>
+                  <p class="step-description" id="location-step-desc">
+                    Tambahkan informasi lokasi untuk story Anda (opsional)
+                  </p>
+                </header>
+
+                <div class="location-section" 
+                     role="group" 
+                     aria-labelledby="location-step-title"
+                     aria-describedby="location-step-desc location-instructions">
+                  <div id="location-instructions" class="sr-only">
+                    Bagian untuk menambahkan lokasi ke story Anda. Anda dapat menggunakan deteksi otomatis 
+                    atau memilih lokasi secara manual pada peta.
+                  </div>
+
+                  <div class="map-container">
+                    <div class="map-overlay" 
+                         role="toolbar" 
+                         aria-label="Kontrol peta lokasi"
+                         aria-describedby="map-controls-desc">
+                      
+                      <div id="map-controls-desc" class="sr-only">
+                        Kontrol untuk mendeteksi lokasi otomatis atau menghapus lokasi yang dipilih
                       </div>
-                      <div class="camera-controls" 
-                           id="camera-controls" 
-                           style="display: none;" 
-                           role="toolbar" 
-                           aria-label="Kontrol kamera"
-                           aria-describedby="camera-controls-desc">
-                        
-                        <div id="camera-controls-desc" class="sr-only">
-                          Kontrol untuk mengambil foto atau menghentikan kamera
-                        </div>
-                        
-                        <button type="button" 
-                                id="capture-btn" 
-                                class="camera-button btn-camera-capture"
-                                aria-label="Ambil foto sekarang"
-                                aria-describedby="capture-help">
-                          <i class="fas fa-camera" aria-hidden="true"></i> 
-                          Ambil Foto
-                        </button>
-                        <div id="capture-help" class="sr-only">
-                          Ambil foto menggunakan kamera yang sedang aktif
-                        </div>
-                        
-                        <button type="button" 
-                                id="stop-camera-btn" 
-                                class="camera-button btn-camera-secondary"
-                                aria-label="Hentikan kamera"
-                                aria-describedby="stop-help">
-                          <i class="fas fa-stop" aria-hidden="true"></i> 
-                          Batal
-                        </button>
-                        <div id="stop-help" class="sr-only">
-                          Hentikan kamera dan kembali ke tampilan awal
+                      
+                      <button type="button" 
+                              id="detect-location-btn" 
+                              class="map-control-btn"
+                              aria-label="Deteksi lokasi otomatis menggunakan GPS"
+                              aria-describedby="detect-location-help">
+                        <i class="fas fa-crosshairs" aria-hidden="true"></i> 
+                        Deteksi Lokasi
+                      </button>
+                      <div id="detect-location-help" class="sr-only">
+                        Gunakan GPS perangkat untuk mendeteksi lokasi Anda secara otomatis
+                      </div>
+                      
+                      <button type="button" 
+                              id="clear-location-btn" 
+                              class="map-control-btn btn-danger" 
+                              style="display: none;"
+                              aria-label="Hapus lokasi yang dipilih"
+                              aria-describedby="clear-location-help">
+                        <i class="fas fa-times" aria-hidden="true"></i> 
+                        Hapus
+                      </button>
+                      <div id="clear-location-help" class="sr-only">
+                        Hapus lokasi yang sudah dipilih dari story
+                      </div>
+                    </div>
+                    <div id="location-map" 
+                         class="location-map"
+                         role="img"
+                         aria-labelledby="map-heading-location"
+                         aria-describedby="map-instructions-detail">
+                    </div>
+                    <!-- H3 untuk peta lokasi -->
+                    <h3 id="map-heading-location" class="sr-only">Peta interaktif untuk memilih lokasi</h3>
+                    <div id="map-instructions-detail" class="sr-only">
+                      Peta interaktif. Klik pada peta untuk memilih lokasi, atau gunakan tombol deteksi lokasi 
+                      untuk menggunakan GPS perangkat Anda.
+                    </div>
+                  </div>
+                  
+                  <div class="location-info">
+                    <div class="location-display">
+                      <div id="location-status" class="location-status" role="status" aria-live="polite">
+                        <i class="fas fa-map-pin location-icon" aria-hidden="true"></i>
+                        <div class="location-text">
+                          <!-- H4 untuk status lokasi -->
+                          <h4>Belum ada lokasi dipilih</h4>
+                          <p>Klik pada peta atau gunakan deteksi otomatis</p>
                         </div>
                       </div>
                     </div>
-                    <aside class="camera-tips">
-                      <h3>
-                        <i class="fas fa-camera" aria-hidden="true"></i>
-                        Tips Mengambil Foto
-                      </h3>
-                      <div class="tips-grid">
-                        <div class="tip-item">
-                          <i class="fas fa-sun" aria-hidden="true"></i>
-                          <span>Pastikan pencahayaan cukup</span>
-                        </div>
-                        <div class="tip-item">
-                          <i class="fas fa-hand-paper" aria-hidden="true"></i>
-                          <span>Pegang perangkat dengan stabil</span>
-                        </div>
-                        <div class="tip-item">
-                          <i class="fas fa-eye" aria-hidden="true"></i>
-                          <span>Fokus pada objek utama</span>
-                        </div>
-                        <div class="tip-item">
-                          <i class="fas fa-crop" aria-hidden="true"></i>
-                          <span>Komposisi yang menarik</span>
-                        </div>
-                      </div>
+                    
+                    <aside class="location-notes">
+                      <!-- H4 untuk catatan lokasi -->
+                      <h4>
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        Catatan Lokasi
+                      </h4>
+                      <ul>
+                        <li>
+                          <i class="fas fa-circle" aria-hidden="true"></i>
+                          Lokasi bersifat opsional dan dapat membantu orang lain menemukan tempat menarik
+                        </li>
+                        <li>
+                          <i class="fas fa-circle" aria-hidden="true"></i>
+                          Anda dapat menggunakan deteksi otomatis atau memilih manual di peta
+                        </li>
+                        <li>
+                          <i class="fas fa-circle" aria-hidden="true"></i>
+                          Informasi lokasi akan ditampilkan bersama story Anda
+                        </li>
+                      </ul>
                     </aside>
                   </div>
                 </div>
-              </fieldset>
-              <fieldset class="form-step" data-step="3">
-                <legend class="sr-only">Langkah 3: Pilih lokasi (opsional)</legend>
-                <div class="step-content">
-                  <header class="step-header">
-                    <h2 class="step-title" id="location-step-title">
-                      <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-                      Tandai Lokasi
-                    </h2>
-                    <p class="step-description" id="location-step-desc">
-                      Tambahkan informasi lokasi untuk story Anda (opsional)
-                    </p>
-                  </header>
-  
-                  <div class="location-section" 
-                       role="group" 
-                       aria-labelledby="location-step-title"
-                       aria-describedby="location-step-desc location-instructions">
-                    <div id="location-instructions" class="sr-only">
-                      Bagian untuk menambahkan lokasi ke story Anda. Anda dapat menggunakan deteksi otomatis 
-                      atau memilih lokasi secara manual pada peta.
-                    </div>
-  
-                    <div class="map-container">
-                      <div class="map-overlay" 
-                           role="toolbar" 
-                           aria-label="Kontrol peta lokasi"
-                           aria-describedby="map-controls-desc">
-                        
-                        <div id="map-controls-desc" class="sr-only">
-                          Kontrol untuk mendeteksi lokasi otomatis atau menghapus lokasi yang dipilih
-                        </div>
-                        
-                        <button type="button" 
-                                id="detect-location-btn" 
-                                class="map-control-btn"
-                                aria-label="Deteksi lokasi otomatis menggunakan GPS"
-                                aria-describedby="detect-location-help">
-                          <i class="fas fa-crosshairs" aria-hidden="true"></i> 
-                          Deteksi Lokasi
-                        </button>
-                        <div id="detect-location-help" class="sr-only">
-                          Gunakan GPS perangkat untuk mendeteksi lokasi Anda secara otomatis
-                        </div>
-                        
-                        <button type="button" 
-                                id="clear-location-btn" 
-                                class="map-control-btn btn-danger" 
-                                style="display: none;"
-                                aria-label="Hapus lokasi yang dipilih"
-                                aria-describedby="clear-location-help">
-                          <i class="fas fa-times" aria-hidden="true"></i> 
-                          Hapus
-                        </button>
-                        <div id="clear-location-help" class="sr-only">
-                          Hapus lokasi yang sudah dipilih dari story
-                        </div>
-                      </div>
-                      <div id="location-map" 
-                           class="location-map"
-                           role="img"
-                           aria-labelledby="map-heading"
-                           aria-describedby="map-instructions-detail">
-                      </div>
-                      <h3 id="map-heading" class="sr-only">Peta interaktif untuk memilih lokasi</h3>
-                      <div id="map-instructions-detail" class="sr-only">
-                        Peta interaktif. Klik pada peta untuk memilih lokasi, atau gunakan tombol deteksi lokasi 
-                        untuk menggunakan GPS perangkat Anda.
-                      </div>
-                    </div>
-                    <div class="location-info">
-                      <div class="location-display">
-                        <div id="location-status" class="location-status" role="status" aria-live="polite">
-                          <i class="fas fa-map-pin location-icon" aria-hidden="true"></i>
-                          <div class="location-text">
-                            <h4>Belum ada lokasi dipilih</h4>
-                            <p>Klik pada peta atau gunakan deteksi otomatis</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <aside class="location-notes">
-                        <h4>
-                          <i class="fas fa-info-circle" aria-hidden="true"></i>
-                          Catatan Lokasi
-                        </h4>
-                        <ul>
-                          <li>
-                            <i class="fas fa-circle" aria-hidden="true"></i>
-                            Lokasi bersifat opsional dan dapat membantu orang lain menemukan tempat menarik
-                          </li>
-                          <li>
-                            <i class="fas fa-circle" aria-hidden="true"></i>
-                            Anda dapat menggunakan deteksi otomatis atau memilih manual di peta
-                          </li>
-                          <li>
-                            <i class="fas fa-circle" aria-hidden="true"></i>
-                            Informasi lokasi akan ditampilkan bersama story Anda
-                          </li>
-                        </ul>
-                      </aside>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
-              <footer class="form-navigation" role="contentinfo">
-                <div class="nav-buttons">
-                  <button type="button" 
-                          id="prev-btn" 
-                          class="nav-button btn-secondary" 
-                          style="display: none;"
-                          aria-label="Kembali ke langkah sebelumnya">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i> 
-                    Sebelumnya
-                  </button>
-                  <button type="button" 
-                          id="next-btn" 
-                          class="nav-button btn-primary" 
-                          disabled
-                          aria-label="Lanjut ke langkah berikutnya">
-                    <span class="btn-text">
-                      Selanjutnya 
-                      <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                    </span>
-                  </button>
-                  <button type="submit" 
-                          id="submit-btn" 
-                          class="nav-button btn-submit" 
-                          style="display: none;"
-                          aria-label="Bagikan story ke komunitas">
-                    <span class="btn-text">
-                      <i class="fas fa-share" aria-hidden="true"></i> 
-                      Bagikan Story
-                    </span>
-                    <span class="btn-loading" style="display: none;">
-                      <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-                      Mengirim...
-                    </span>
-                  </button>
-                </div>
-                
-                <div class="cancel-area">
-                  <button type="button" 
-                          id="cancel-btn" 
-                          class="cancel-button"
-                          aria-label="Batalkan pembuatan story">
-                    <i class="fas fa-times" aria-hidden="true"></i> 
-                    Batalkan
-                  </button>
-                </div>
-              </footer>
-            </form>
-          </div>
-        </main>
-      `;
+              </div>
+            </fieldset>
+
+            <!-- Navigation Footer -->
+            <footer class="form-navigation" role="contentinfo">
+              <div class="nav-buttons">
+                <button type="button" 
+                        id="prev-btn" 
+                        class="nav-button btn-secondary" 
+                        style="display: none;"
+                        aria-label="Kembali ke langkah sebelumnya">
+                  <i class="fas fa-arrow-left" aria-hidden="true"></i> 
+                  Sebelumnya
+                </button>
+                <button type="button" 
+                        id="next-btn" 
+                        class="nav-button btn-primary" 
+                        disabled
+                        aria-label="Lanjut ke langkah berikutnya">
+                  <span class="btn-text">
+                    Selanjutnya 
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                  </span>
+                </button>
+                <button type="submit" 
+                        id="submit-btn" 
+                        class="nav-button btn-submit" 
+                        style="display: none;"
+                        aria-label="Bagikan story ke komunitas">
+                  <span class="btn-text">
+                    <i class="fas fa-share" aria-hidden="true"></i> 
+                    Bagikan Story
+                  </span>
+                  <span class="btn-loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                    Mengirim...
+                  </span>
+                </button>
+              </div>
+              
+              <div class="cancel-area">
+                <button type="button" 
+                        id="cancel-btn" 
+                        class="cancel-button"
+                        aria-label="Batalkan pembuatan story">
+                  <i class="fas fa-times" aria-hidden="true"></i> 
+                  Batalkan
+                </button>
+              </div>
+            </footer>
+          </form>
+        </div>
+      </main>
+    `;
   }
 
   async afterRender() {

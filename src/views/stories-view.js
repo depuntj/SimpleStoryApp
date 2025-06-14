@@ -67,6 +67,7 @@ export class StoriesView {
       <div class="stories-page">
         <header class="stories-hero">
           <div class="hero-content">
+            <!-- H1 UTAMA HALAMAN - hanya satu per halaman -->
             <h1 class="hero-title">
               <i class="fas fa-book-open" aria-hidden="true"></i>
               Dicoding Stories
@@ -121,6 +122,7 @@ export class StoriesView {
 
             <aside class="toolbar-right">
               <div class="stories-stats" id="stories-stats" aria-labelledby="stats-heading">
+                <!-- H2 untuk section statistik -->
                 <h2 id="stats-heading" class="sr-only">Statistik Stories</h2>
                 <div class="stat-item">
                   <span class="stat-number" id="total-count" aria-labelledby="total-label">0</span>
@@ -136,14 +138,16 @@ export class StoriesView {
 
           <div class="stories-content">
             <section class="stories-grid-container">
-              <h2 class="sr-only">Daftar Stories</h2>
-              <div id="stories-container" class="stories-grid" role="feed" aria-labelledby="stories-heading" aria-busy="false">
-                <h3 id="stories-heading" class="sr-only">Stories dari komunitas</h3>
+              <!-- H2 untuk section utama stories -->
+              <h2 id="stories-section-heading" class="sr-only">Daftar Stories Komunitas</h2>
+              <div id="stories-container" class="stories-grid" role="feed" aria-labelledby="stories-section-heading" aria-busy="false">
+                <!-- Stories akan dimuat di sini -->
               </div>
             </section>
 
             <aside class="stories-map-container">
               <header class="map-header">
+                <!-- H2 untuk section peta -->
                 <h2 id="map-heading">
                   <i class="fas fa-map" aria-hidden="true"></i>
                   Peta Stories
